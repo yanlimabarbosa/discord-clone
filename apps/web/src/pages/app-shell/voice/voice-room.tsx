@@ -1,11 +1,13 @@
 import { useState } from 'react';
 import {
   useTracks,
+  GridLayout,
   RoomAudioRenderer,
   type TrackReferenceOrPlaceholder,
 } from '@livekit/components-react';
 import { Track } from 'livekit-client';
 import { ParticipantCard } from './participant-card';
+import { TileInGrid } from './tile-in-grid';
 import { VoiceSounds } from './voice-sounds';
 import { VoiceControls } from './voice-controls';
 
@@ -55,14 +57,10 @@ export function VoiceRoom() {
           )}
         </div>
       ) : (
-        <div className="vc-grid">
-          {tracks.map((t) => (
-            <ParticipantCard
-              key={trackKey(t)}
-              trackRef={t}
-              onSelect={() => setFocusedKey(trackKey(t))}
-            />
-          ))}
+        <div className="vc-grid-area">
+          <GridLayout tracks={tracks}>
+            <TileInGrid onFocus={setFocusedKey} />
+          </GridLayout>
         </div>
       )}
 
