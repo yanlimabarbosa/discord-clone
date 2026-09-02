@@ -34,6 +34,7 @@ export function useAppShell() {
     activeChannelId,
     activeServer,
     activeChannel,
+    firstTextChannelId: firstTextChannel(channels)?.id ?? null,
     selectServer: (id: string) => {
       setPickedServerId(id);
       setPickedChannelId(null);

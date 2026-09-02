@@ -8,6 +8,7 @@ type ChannelSidebarProps = {
   channels: Channel[];
   activeChannelId: string | null;
   onSelectChannel: (id: string) => void;
+  onInvite: () => void;
   user: PublicUser | undefined;
   onLogout: () => void;
 };
@@ -17,6 +18,7 @@ export function ChannelSidebar({
   channels,
   activeChannelId,
   onSelectChannel,
+  onInvite,
   user,
   onLogout,
 }: ChannelSidebarProps) {
@@ -25,7 +27,14 @@ export function ChannelSidebar({
 
   return (
     <aside className="channel-sidebar">
-      <div className="sidebar-header">{server?.name ?? 'No server'}</div>
+      <div className="sidebar-header">
+        <span className="sidebar-header-name">{server?.name ?? 'No server'}</span>
+        {server && (
+          <button className="sidebar-invite" title="Invite people" onClick={onInvite}>
+            Invite
+          </button>
+        )}
+      </div>
 
       <div className="sidebar-body">
         {!server && (
@@ -48,18 +57,13 @@ export function ChannelSidebar({
             {channels.map((channel) => (
               <button
                 key={channel.id}
-                className={`channel-item ${channel.id === activeChannelId ? 'channel-item-active' : ''} ${channel.type === 'VOICE' ? 'channel-item-voice' : ''}`}
-                onClick={() =>
-                  channel.type === 'TEXT' && onSelectChannel(channel.id)
-                }
+                className={`channel-item ${channel.id === activeChannelId ? 'channel-item-active' : ''}`}
+                onClick={() => onSelectChannel(channel.id)}
               >
                 <span className="channel-icon">
                   {channel.type === 'VOICE' ? '🔊' : '#'}
                 </span>
                 {channel.name}
-                {channel.type === 'VOICE' && (
-                  <span className="channel-soon">soon</span>
-                )}
               </button>
             ))}
           </>

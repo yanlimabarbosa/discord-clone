@@ -577,3 +577,44 @@ button {
   font-size: 14px;
   cursor: pointer;
 }
+
+/* ---------- Sidebar header + invite ---------- */
+.sidebar-header {
+  justify-content: space-between;
+}
+.sidebar-header-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.sidebar-invite {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--blurple);
+  padding: 4px 8px;
+  border-radius: 6px;
+}
+.sidebar-invite:hover {
+  background: var(--hover);
+  color: #fff;
+}
+.invite-row {
+  display: flex;
+  gap: 8px;
+  margin-top: 16px;
+}
+.invite-link {
+  flex: 1;
+  font-size: 13px;
+}
+.invite-copy {
+  margin-top: 0;
+  padding: 0 18px;
+  white-space: nowrap;
+}
+
+/* ---------- Voice view ---------- */
+.content-voice {
+  padding: 0;
+  overflow: hidden;
+}

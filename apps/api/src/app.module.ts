@@ -7,6 +7,7 @@ import { LivekitModule } from './livekit/livekit.module';
 import { ServersModule } from './servers/servers.module';
 import { ChannelsModule } from './channels/channels.module';
 import { MessagesModule } from './messages/messages.module';
+import { InvitesModule } from './invites/invites.module';
 import { GatewayModule } from './gateway/gateway.module';
 
 @Module({
@@ -19,6 +20,7 @@ import { GatewayModule } from './gateway/gateway.module';
     ServersModule,
     ChannelsModule,
     MessagesModule,
+    InvitesModule,
   ],
   controllers: [HealthController],
 })
