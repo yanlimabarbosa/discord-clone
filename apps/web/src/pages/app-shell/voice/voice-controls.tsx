@@ -1,5 +1,4 @@
-import { useTrackToggle, useRoomContext } from '@livekit/components-react';
-import { Track } from 'livekit-client';
+import { useLocalParticipant, useRoomContext } from '@livekit/components-react';
 import {
   Mic,
   MicOff,
@@ -12,32 +11,45 @@ import {
 
 export function VoiceControls() {
   const room = useRoomContext();
-  const mic = useTrackToggle({ source: Track.Source.Microphone });
-  const cam = useTrackToggle({ source: Track.Source.Camera });
-  const screen = useTrackToggle({ source: Track.Source.ScreenShare });
+  const {
+    localParticipant,
+    isMicrophoneEnabled,
+    isCameraEnabled,
+    isScreenShareEnabled,
+  } = useLocalParticipant();
 
   return (
     <div className="vc-bar">
       <button
-        className={`vc-ctrl-btn ${mic.enabled ? '' : 'vc-ctrl-danger'}`}
-        title={mic.enabled ? 'Mute' : 'Unmute'}
-        onClick={() => mic.toggle()}
+        className={`vc-ctrl-btn ${isMicrophoneEnabled ? '' : 'vc-ctrl-danger'}`}
+        title={isMicrophoneEnabled ? 'Mute' : 'Unmute'}
+        onClick={() =>
+          localParticipant.setMicrophoneEnabled(!isMicrophoneEnabled)
+        }
       >
-        {mic.enabled ? <Mic size={20} /> : <MicOff size={20} />}
+        {isMicrophoneEnabled ? <Mic size={20} /> : <MicOff size={20} />}
       </button>
       <button
-        className={`vc-ctrl-btn ${cam.enabled ? 'vc-ctrl-active' : ''}`}
-        title={cam.enabled ? 'Turn off camera' : 'Turn on camera'}
-        onClick={() => cam.toggle()}
+        className={`vc-ctrl-btn ${isCameraEnabled ? 'vc-ctrl-active' : ''}`}
+        title={isCameraEnabled ? 'Turn off camera' : 'Turn on camera'}
+        onClick={() => localParticipant.setCameraEnabled(!isCameraEnabled)}
       >
-        {cam.enabled ? <Video size={20} /> : <VideoOff size={20} />}
+        {isCameraEnabled ? <Video size={20} /> : <VideoOff size={20} />}
       </button>
       <button
-        className={`vc-ctrl-btn ${screen.enabled ? 'vc-ctrl-active' : ''}`}
-        title={screen.enabled ? 'Stop sharing' : 'Share screen'}
-        onClick={() => screen.toggle()}
+        className={`vc-ctrl-btn ${isScreenShareEnabled ? 'vc-ctrl-active' : ''}`}
+        title={isScreenShareEnabled ? 'Stop sharing' : 'Share screen (with audio)'}
+        onClick={() =>
+          localParticipant.setScreenShareEnabled(!isScreenShareEnabled, {
+            audio: true,
+          })
+        }
       >
-        {screen.enabled ? <ScreenShareOff size={20} /> : <ScreenShare size={20} />}
+        {isScreenShareEnabled ? (
+          <ScreenShareOff size={20} />
+        ) : (
+          <ScreenShare size={20} />
+        )}
       </button>
       <button
         className="vc-ctrl-btn vc-ctrl-leave"

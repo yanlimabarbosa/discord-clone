@@ -1346,3 +1346,38 @@ button {
   border-left: 1px solid var(--rail);
   background: var(--content);
 }
+
+/* ---------- Fullscreen + screenshare fit ---------- */
+.vc-fullscreen {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.6);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.12s ease, background 0.12s ease;
+}
+.vc-tile:hover .vc-fullscreen {
+  opacity: 1;
+}
+.vc-fullscreen:hover {
+  background: rgba(0, 0, 0, 0.85);
+}
+.vc-video-contain {
+  object-fit: contain !important;
+  background: #000;
+}
+.vc-tile:fullscreen {
+  border: none;
+  border-radius: 0;
+}
+.vc-tile:fullscreen .vc-video {
+  object-fit: contain;
+  background: #000;
+}
