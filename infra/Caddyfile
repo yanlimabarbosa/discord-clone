@@ -1,0 +1,13 @@
+{$DOMAIN} {
+	handle /token* {
+		reverse_proxy token:3000
+	}
+
+	handle /rtc* {
+		reverse_proxy livekit:7880
+	}
+
+	handle {
+		reverse_proxy web:4173
+	}
+}
