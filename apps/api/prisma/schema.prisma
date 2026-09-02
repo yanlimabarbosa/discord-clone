@@ -33,6 +33,7 @@ model Server {
   name      String
   iconUrl   String?
   ownerId   String
+  isPublic  Boolean  @default(true)
   createdAt DateTime @default(now())
   owner     User     @relation("ServerOwner", fields: [ownerId], references: [id], onDelete: Cascade)
   members   ServerMember[]

@@ -8,6 +8,7 @@ import { VoiceStage } from './voice/voice-stage';
 import { MemberList } from './member-list';
 import { CreateServerDialog } from './create-server-dialog';
 import { InviteDialog } from './invite-dialog';
+import { ExploreDialog } from './explore-dialog';
 import type { useAppShell } from './use-app-shell';
 
 type ShellBodyProps = {
@@ -20,6 +21,7 @@ export function ShellBody({ shell, inVoice }: ShellBodyProps) {
   useSpeakingRealtime();
   const [creatingServer, setCreatingServer] = useState(false);
   const [inviting, setInviting] = useState(false);
+  const [exploring, setExploring] = useState(false);
   const [showMembers, setShowMembers] = useState(true);
   const toggleMembers = () => setShowMembers((s) => !s);
 
@@ -34,6 +36,7 @@ export function ShellBody({ shell, inVoice }: ShellBodyProps) {
         activeServerId={shell.activeServerId}
         onSelect={shell.selectServer}
         onCreate={() => setCreatingServer(true)}
+        onExplore={() => setExploring(true)}
       />
       <ChannelSidebar
         server={shell.activeServer}
@@ -79,8 +82,15 @@ export function ShellBody({ shell, inVoice }: ShellBodyProps) {
       )}
       {inviting && shell.activeServer && (
         <InviteDialog
-          serverId={shell.activeServer.id}
+          server={shell.activeServer}
+          isOwner={shell.activeServer.ownerId === shell.user?.id}
           onClose={() => setInviting(false)}
+        />
+      )}
+      {exploring && (
+        <ExploreDialog
+          onClose={() => setExploring(false)}
+          onJoined={shell.selectServer}
         />
       )}
     </div>

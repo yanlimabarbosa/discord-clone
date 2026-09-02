@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useMembers } from '../../hooks/members/use-members';
 import { useSpeaking } from '../../hooks/realtime/use-speaking';
 import type { Member } from '../../types/member';
+import { Avatar } from '../../components/avatar';
 import { ProfileCard } from './profile-card';
 
 type MemberListProps = {
@@ -15,7 +16,6 @@ function MemberRow({
   member: Member;
   onOpenProfile: (member: Member) => void;
 }) {
-  const initial = member.displayName.charAt(0).toUpperCase();
   const speaking = useSpeaking();
   const isSpeaking = !!speaking[member.id];
   return (
@@ -24,9 +24,12 @@ function MemberRow({
       onClick={() => onOpenProfile(member)}
     >
       <div className="member-avatar-wrap">
-        <div className={`avatar member-avatar ${isSpeaking ? 'avatar-speaking' : ''}`}>
-          {initial}
-        </div>
+        <Avatar
+          name={member.displayName}
+          avatarUrl={member.avatarUrl}
+          size={32}
+          className={`member-avatar ${isSpeaking ? 'avatar-speaking' : ''}`}
+        />
         <span
           className={`presence-dot ${member.online ? 'presence-online' : 'presence-off'}`}
         />

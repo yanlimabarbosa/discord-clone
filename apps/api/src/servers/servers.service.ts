@@ -1,4 +1,8 @@
-import { ForbiddenException, Injectable } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
@@ -29,18 +33,86 @@ export class ServersService {
     });
   }
 
+  async listPublic(userId: string) {
+    const servers = await this.prisma.server.findMany({
+      where: { isPublic: true, members: { none: { userId } } },
+      orderBy: { createdAt: 'desc' },
+      include: { _count: { select: { members: true } } },
+    });
+    return servers.map((s) => ({
+      id: s.id,
+      name: s.name,
+      iconUrl: s.iconUrl,
+      ownerId: s.ownerId,
+      isPublic: s.isPublic,
+      memberCount: s._count.members,
+    }));
+  }
+
   async getWithChannels(userId: string, serverId: string) {
-    await this.assertMember(userId, serverId);
+    await this.assertCanView(userId, serverId);
     return this.prisma.server.findUnique({
       where: { id: serverId },
       include: { channels: { orderBy: { position: 'asc' } } },
     });
   }
 
-  async assertMember(userId: string, serverId: string) {
-    const member = await this.prisma.serverMember.findUnique({
+  async join(userId: string, serverId: string) {
+    const server = await this.getServer(serverId);
+    if (!server.isPublic) {
+      throw new ForbiddenException('this server is invite-only');
+    }
+    await this.ensureMember(userId, serverId);
+    return server;
+  }
+
+  async setPrivacy(userId: string, serverId: string, isPublic: boolean) {
+    const server = await this.getServer(serverId);
+    if (server.ownerId !== userId) {
+      throw new ForbiddenException('only the owner can change privacy');
+    }
+    return this.prisma.server.update({
+      where: { id: serverId },
+      data: { isPublic },
+    });
+  }
+
+  async ensureMember(userId: string, serverId: string) {
+    const existing = await this.prisma.serverMember.findUnique({
       where: { serverId_userId: { serverId, userId } },
     });
-    if (!member) throw new ForbiddenException('not a member of this server');
+    if (!existing) {
+      await this.prisma.serverMember.create({ data: { serverId, userId } });
+    }
+  }
+
+  async isMember(userId: string, serverId: string): Promise<boolean> {
+    const m = await this.prisma.serverMember.findUnique({
+      where: { serverId_userId: { serverId, userId } },
+    });
+    return !!m;
+  }
+
+  async assertMember(userId: string, serverId: string) {
+    if (!(await this.isMember(userId, serverId))) {
+      throw new ForbiddenException('not a member of this server');
+    }
+  }
+
+  // A public server is viewable by anyone; a private one only by members.
+  async assertCanView(userId: string, serverId: string) {
+    if (await this.isMember(userId, serverId)) return;
+    const server = await this.getServer(serverId);
+    if (!server.isPublic) {
+      throw new ForbiddenException('this server is private');
+    }
+  }
+
+  private async getServer(serverId: string) {
+    const server = await this.prisma.server.findUnique({
+      where: { id: serverId },
+    });
+    if (!server) throw new NotFoundException('server not found');
+    return server;
   }
 }

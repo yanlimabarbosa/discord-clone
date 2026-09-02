@@ -1,0 +1,60 @@
+import { usePublicServers } from '../../hooks/servers/use-public-servers';
+import { useJoinServer } from '../../hooks/servers/use-join-server';
+
+type ExploreDialogProps = {
+  onClose: () => void;
+  onJoined: (serverId: string) => void;
+};
+
+export function ExploreDialog({ onClose, onJoined }: ExploreDialogProps) {
+  const { data: servers, isLoading } = usePublicServers(true);
+  const joinServer = useJoinServer();
+
+  async function join(id: string) {
+    await joinServer.mutateAsync(id);
+    onJoined(id);
+    onClose();
+  }
+
+  return (
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal explore-modal" onClick={(e) => e.stopPropagation()}>
+        <h2 className="modal-title">Explore public servers</h2>
+        <p className="modal-subtitle">Jump into any public server — no invite needed.</p>
+
+        <div className="explore-list">
+          {isLoading && <div className="sidebar-empty">Loading…</div>}
+          {!isLoading && (servers ?? []).length === 0 && (
+            <div className="sidebar-empty">
+              No public servers to join right now.
+            </div>
+          )}
+          {(servers ?? []).map((s) => (
+            <div key={s.id} className="explore-row">
+              <div className="avatar explore-icon">
+                {s.name.charAt(0).toUpperCase()}
+              </div>
+              <div className="explore-info">
+                <span className="explore-name">{s.name}</span>
+                <span className="explore-meta">{s.memberCount} members</span>
+              </div>
+              <button
+                className="btn-primary explore-join"
+                onClick={() => join(s.id)}
+                disabled={joinServer.isPending}
+              >
+                Join
+              </button>
+            </div>
+          ))}
+        </div>
+
+        <div className="modal-actions">
+          <button className="btn-ghost" onClick={onClose}>
+            Done
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}

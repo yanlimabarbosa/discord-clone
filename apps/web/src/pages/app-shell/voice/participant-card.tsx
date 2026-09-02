@@ -9,9 +9,10 @@ import { ParticipantContextMenu } from './participant-context-menu';
 
 type ParticipantCardProps = {
   trackRef: TrackReferenceOrPlaceholder;
+  onSelect?: () => void;
 };
 
-export function ParticipantCard({ trackRef }: ParticipantCardProps) {
+export function ParticipantCard({ trackRef, onSelect }: ParticipantCardProps) {
   const participant = trackRef.participant;
   const speaking = useIsSpeaking(participant);
   const isScreen = trackRef.source === Track.Source.ScreenShare;
@@ -50,6 +51,7 @@ export function ParticipantCard({ trackRef }: ParticipantCardProps) {
     <div
       className={`vc-tile ${speaking && !isScreen ? 'vc-speaking' : ''}`}
       onContextMenu={onContextMenu}
+      onClick={onSelect}
     >
       {hasVideo ? (
         <VideoTrack

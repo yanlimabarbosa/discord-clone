@@ -11,7 +11,7 @@ export class ChannelsService {
   ) {}
 
   async listForServer(userId: string, serverId: string) {
-    await this.servers.assertMember(userId, serverId);
+    await this.servers.assertCanView(userId, serverId);
     return this.prisma.channel.findMany({
       where: { serverId },
       orderBy: { position: 'asc' },

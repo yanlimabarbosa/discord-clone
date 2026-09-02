@@ -20,7 +20,9 @@ export class LivekitService {
       select: { serverId: true },
     });
     if (!channel) throw new NotFoundException('channel not found');
-    await this.servers.assertMember(userId, channel.serverId);
+    // Public servers: joining a voice channel auto-joins the server.
+    await this.servers.assertCanView(userId, channel.serverId);
+    await this.servers.ensureMember(userId, channel.serverId);
 
     const at = new AccessToken(
       process.env.LIVEKIT_API_KEY,

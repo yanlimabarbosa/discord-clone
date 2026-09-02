@@ -823,8 +823,28 @@ button {
   background: #c93b3e;
 }
 .vc-controls .lk-button-group {
+  display: flex;
+  gap: 0;
   border-radius: 8px;
   overflow: hidden;
+  background: #2b2d31;
+}
+.vc-controls .lk-button-group .lk-button {
+  border-radius: 0;
+  background: transparent;
+}
+.vc-controls .lk-button-group .lk-button:hover {
+  background: #35373c;
+}
+.vc-controls .lk-button-group .lk-button + .lk-button,
+.vc-controls .lk-button-group .lk-button-group-menu {
+  border-left: 1px solid rgba(0, 0, 0, 0.25);
+  padding-left: 8px;
+  padding-right: 8px;
+}
+.vc-controls .lk-button-group .lk-button[aria-pressed='true'] {
+  background: var(--blurple);
+  color: #fff;
 }
 
 /* ---------- Channel item name + edit ---------- */
@@ -1000,4 +1020,225 @@ button {
 }
 .btn-danger:hover {
   background: #c93b3e;
+}
+
+/* ========== UI POLISH PASS ========== */
+
+/* Custom scrollbars (Discord-style thin) */
+*::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+*::-webkit-scrollbar-thumb {
+  background: #1a1b1e;
+  border-radius: 4px;
+}
+*::-webkit-scrollbar-thumb:hover {
+  background: #0d0e10;
+}
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* Press feedback on interactive elements */
+.btn-primary:active,
+.btn-ghost:active,
+.btn-danger:active,
+.tab:active,
+.icon-btn:active,
+.channel-add:active,
+.channel-edit:active,
+.sidebar-invite:active,
+.header-members-btn:active,
+.server-pill:active {
+  transform: scale(0.95);
+}
+
+.btn-primary,
+.tab,
+.icon-btn,
+.sidebar-invite,
+.header-members-btn {
+  transition:
+    background 0.12s ease,
+    transform 0.08s ease,
+    color 0.12s ease;
+}
+
+/* Message row hover highlight (full-width like Discord) */
+.message {
+  padding: 4px 16px;
+  margin: 2px -16px;
+  border-radius: 6px;
+  transition: background 0.08s ease;
+}
+.message:hover {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+/* Clickable avatars */
+.message-avatar,
+.member-avatar,
+.voice-occupant-avatar {
+  cursor: pointer;
+  transition: box-shadow 0.12s ease;
+}
+
+/* Input focus glow */
+.field-input:focus {
+  box-shadow: 0 0 0 3px rgba(88, 101, 242, 0.25);
+}
+.composer-input {
+  transition: box-shadow 0.12s ease;
+}
+.composer-input:focus {
+  box-shadow: 0 0 0 2px rgba(88, 101, 242, 0.45);
+}
+
+/* Discord-style active/hover server indicator pill on the rail */
+.server-pill::before {
+  content: '';
+  position: absolute;
+  left: -12px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 4px;
+  height: 0;
+  background: #fff;
+  border-radius: 0 4px 4px 0;
+  transition: height 0.15s ease;
+}
+.server-pill:hover::before {
+  height: 20px;
+}
+.server-pill-active::before,
+.server-home::before {
+  height: 36px;
+}
+
+/* Invite button / links */
+.sidebar-invite,
+.landing-title {
+  transition: all 0.12s ease;
+}
+
+/* ---------- Voice focus / spotlight ---------- */
+.vc-tile {
+  cursor: pointer;
+}
+.vc-stage-focus {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px;
+}
+.vc-focused {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+}
+.vc-focused .vc-tile {
+  flex: 1;
+  width: 100%;
+  height: 100%;
+  max-height: 100%;
+  aspect-ratio: auto;
+}
+.vc-strip {
+  flex: 0 0 auto;
+  height: 104px;
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+}
+.vc-strip-item {
+  flex: 0 0 auto;
+  width: 176px;
+  height: 100px;
+}
+.vc-strip-item .vc-tile {
+  width: 100%;
+  height: 100%;
+  max-height: 100%;
+  aspect-ratio: auto;
+  flex: none;
+}
+
+/* ---------- Explore public servers ---------- */
+.explore-modal {
+  max-width: 480px;
+}
+.explore-list {
+  max-height: 340px;
+  overflow-y: auto;
+  margin: 16px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.explore-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px;
+  border-radius: 8px;
+  background: var(--rail);
+}
+.explore-icon {
+  width: 40px;
+  height: 40px;
+  font-size: 16px;
+}
+.explore-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.explore-name {
+  font-weight: 600;
+}
+.explore-meta {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+.explore-join {
+  margin-top: 0;
+  padding: 8px 18px;
+}
+.server-explore {
+  color: #fff;
+}
+.server-explore:hover {
+  background: var(--blurple);
+}
+
+/* ---------- Server privacy toggle ---------- */
+.privacy-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 16px;
+  padding: 12px;
+  background: var(--rail);
+  border-radius: 8px;
+}
+.privacy-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+.privacy-title {
+  font-weight: 600;
+  font-size: 14px;
+}
+.privacy-desc {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+.privacy-toggle {
+  background: var(--hover);
+  white-space: nowrap;
 }

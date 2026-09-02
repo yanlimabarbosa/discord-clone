@@ -1,10 +1,12 @@
-import { useState } from 'react';
+import { useRef, useState, type ChangeEvent } from 'react';
 import type { Channel, Server } from '../../types/server';
 import type { PublicUser } from '../../types/user';
 import type { Member } from '../../types/member';
 import type { ActiveVoice } from './use-app-shell';
 import { useMembers } from '../../hooks/members/use-members';
 import { useSpeaking } from '../../hooks/realtime/use-speaking';
+import { useUploadAvatar } from '../../hooks/users/use-upload-avatar';
+import { Avatar } from '../../components/avatar';
 import { CreateChannelDialog } from './create-channel-dialog';
 import { EditChannelDialog } from './edit-channel-dialog';
 import { ProfileCard } from './profile-card';
@@ -47,8 +49,15 @@ export function ChannelSidebar({
   const [profile, setProfile] = useState<Member | null>(null);
   const { data: members } = useMembers(server?.id ?? null);
   const speaking = useSpeaking();
-  const initial = user?.displayName?.charAt(0).toUpperCase() ?? '?';
+  const uploadAvatar = useUploadAvatar();
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const showVoicePanel = !!voice && inVoice;
+
+  const onPickAvatar = (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) uploadAvatar.mutate(file);
+    e.target.value = '';
+  };
 
   return (
     <aside className="channel-sidebar">
@@ -111,11 +120,12 @@ export function ChannelSidebar({
                       className="voice-occupant"
                       onClick={() => setProfile(m)}
                     >
-                      <div
-                        className={`avatar voice-occupant-avatar ${speaking[m.id] ? 'avatar-speaking' : ''}`}
-                      >
-                        {m.displayName.charAt(0).toUpperCase()}
-                      </div>
+                      <Avatar
+                        name={m.displayName}
+                        avatarUrl={m.avatarUrl}
+                        size={24}
+                        className={`voice-occupant-avatar ${speaking[m.id] ? 'avatar-speaking' : ''}`}
+                      />
                       <span className="voice-occupant-name">
                         {m.displayName}
                       </span>
@@ -137,7 +147,26 @@ export function ChannelSidebar({
       )}
 
       <div className="user-panel">
-        <div className="avatar">{initial}</div>
+        <button
+          type="button"
+          className="avatar-upload-btn"
+          title="Change avatar"
+          onClick={() => fileInputRef.current?.click()}
+          disabled={uploadAvatar.isPending}
+        >
+          <Avatar
+            name={user?.displayName ?? '?'}
+            avatarUrl={user?.avatarUrl}
+            size={32}
+          />
+        </button>
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/*"
+          style={{ display: 'none' }}
+          onChange={onPickAvatar}
+        />
         <div className="user-panel-info">
           <span className="user-panel-name">{user?.displayName}</span>
           <span className="user-panel-tag">

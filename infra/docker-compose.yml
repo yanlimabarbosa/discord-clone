@@ -37,6 +37,8 @@ services:
       GOOGLE_CLIENT_ID: "${GOOGLE_CLIENT_ID:-}"
       GOOGLE_CLIENT_SECRET: "${GOOGLE_CLIENT_SECRET:-}"
       PUBLIC_URL: "https://${DOMAIN}"
+    volumes:
+      - uploads:/app/uploads
     depends_on:
       postgres:
         condition: service_healthy
@@ -64,3 +66,4 @@ volumes:
   postgres_data:
   caddy_data:
   caddy_config:
+  uploads:

@@ -12,7 +12,7 @@ export class MembersService {
   ) {}
 
   async list(userId: string, serverId: string) {
-    await this.servers.assertMember(userId, serverId);
+    await this.servers.assertCanView(userId, serverId);
     const members = await this.prisma.serverMember.findMany({
       where: { serverId },
       include: {

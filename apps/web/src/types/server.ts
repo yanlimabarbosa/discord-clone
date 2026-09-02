@@ -14,4 +14,5 @@ export type Server = {
   name: string;
   iconUrl: string | null;
   ownerId: string;
+  isPublic: boolean;
 };

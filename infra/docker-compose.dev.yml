@@ -38,9 +38,12 @@ services:
       PUBLIC_URL: "http://localhost:5173"
     ports:
       - "3000:3000"
+    volumes:
+      - uploads:/app/uploads
     depends_on:
       postgres:
         condition: service_healthy
 
 volumes:
   pgdev:
+  uploads:

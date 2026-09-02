@@ -49,6 +49,7 @@ export function ParticipantContextMenu({
       ref={ref}
       className="vc-ctx"
       style={{ left: x, top: y }}
+      onClick={(e) => e.stopPropagation()}
       onContextMenu={(e) => e.preventDefault()}
     >
       <div className="vc-ctx-header">{name}</div>

@@ -5,6 +5,7 @@ type ServerRailProps = {
   activeServerId: string | null;
   onSelect: (id: string) => void;
   onCreate: () => void;
+  onExplore: () => void;
 };
 
 export function ServerRail({
@@ -12,6 +13,7 @@ export function ServerRail({
   activeServerId,
   onSelect,
   onCreate,
+  onExplore,
 }: ServerRailProps) {
   return (
     <nav className="server-rail">
@@ -31,6 +33,13 @@ export function ServerRail({
       ))}
       <button className="server-pill server-add" title="Add a server" onClick={onCreate}>
         +
+      </button>
+      <button
+        className="server-pill server-explore"
+        title="Explore public servers"
+        onClick={onExplore}
+      >
+        🧭
       </button>
     </nav>
   );

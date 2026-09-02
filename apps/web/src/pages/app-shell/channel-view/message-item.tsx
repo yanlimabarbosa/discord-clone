@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import type { Message } from '../../../types/message';
+import { Avatar } from '../../../components/avatar';
 import { ProfileCard } from '../profile-card';
 
 type MessageItemProps = {
@@ -17,18 +18,21 @@ function formatTime(iso: string): string {
 }
 
 export function MessageItem({ message }: MessageItemProps) {
-  const initial = message.author.displayName.charAt(0).toUpperCase();
   const time = formatTime(message.createdAt);
   const [showProfile, setShowProfile] = useState(false);
 
   return (
     <div className="message">
       <div
-        className="avatar message-avatar"
+        className="message-avatar"
         style={{ cursor: 'pointer' }}
         onClick={() => setShowProfile(true)}
       >
-        {initial}
+        <Avatar
+          name={message.author.displayName}
+          avatarUrl={message.author.avatarUrl}
+          size={40}
+        />
       </div>
       <div className="message-body">
         <div className="message-meta">

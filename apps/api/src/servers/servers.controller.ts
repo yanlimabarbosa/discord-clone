@@ -4,6 +4,7 @@ import {
   Controller,
   Get,
   Param,
+  Patch,
   Post,
   UseGuards,
 } from '@nestjs/common';
@@ -22,6 +23,11 @@ export class ServersController {
     return this.servers.listForUser(user.id);
   }
 
+  @Get('public')
+  listPublic(@CurrentUser() user: User) {
+    return this.servers.listPublic(user.id);
+  }
+
   @Post()
   create(@CurrentUser() user: User, @Body('name') name: string) {
     if (!name?.trim()) throw new BadRequestException('server name required');
@@ -31,5 +37,19 @@ export class ServersController {
   @Get(':id')
   get(@CurrentUser() user: User, @Param('id') id: string) {
     return this.servers.getWithChannels(user.id, id);
+  }
+
+  @Post(':id/join')
+  join(@CurrentUser() user: User, @Param('id') id: string) {
+    return this.servers.join(user.id, id);
+  }
+
+  @Patch(':id')
+  setPrivacy(
+    @CurrentUser() user: User,
+    @Param('id') id: string,
+    @Body('isPublic') isPublic: boolean,
+  ) {
+    return this.servers.setPrivacy(user.id, id, !!isPublic);
   }
 }
