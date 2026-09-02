@@ -1,3 +1,4 @@
+import { Plus, Compass } from 'lucide-react';
 import type { Server } from '../../types/server';
 
 type ServerRailProps = {
@@ -32,14 +33,14 @@ export function ServerRail({
         </button>
       ))}
       <button className="server-pill server-add" title="Add a server" onClick={onCreate}>
-        +
+        <Plus size={22} />
       </button>
       <button
         className="server-pill server-explore"
         title="Explore public servers"
         onClick={onExplore}
       >
-        🧭
+        <Compass size={22} />
       </button>
     </nav>
   );

@@ -1,6 +1,7 @@
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
+import { Hash, Volume2 } from 'lucide-react';
 import { useCreateChannel } from '../../hooks/channels/use-create-channel';
 
 const schema = z.object({
@@ -42,10 +43,12 @@ export function CreateChannelDialog({
           <label className="field-label">Channel type</label>
           <div className="radio-row">
             <label className="radio-option">
-              <input type="radio" value="TEXT" {...register('type')} /># Text
+              <input type="radio" value="TEXT" {...register('type')} />
+              <Hash size={16} /> Text
             </label>
             <label className="radio-option">
-              <input type="radio" value="VOICE" {...register('type')} />🔊 Voice
+              <input type="radio" value="VOICE" {...register('type')} />
+              <Volume2 size={16} /> Voice
             </label>
           </div>
           <label className="field-label">Channel name</label>

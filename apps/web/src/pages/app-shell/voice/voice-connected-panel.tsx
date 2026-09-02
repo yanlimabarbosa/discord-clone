@@ -1,4 +1,5 @@
 import { useLocalParticipant } from '@livekit/components-react';
+import { Mic, MicOff, PhoneOff, Volume2 } from 'lucide-react';
 import type { ActiveVoice } from '../use-app-shell';
 
 type VoiceConnectedPanelProps = {
@@ -17,7 +18,9 @@ export function VoiceConnectedPanel({
   return (
     <div className="voice-connected">
       <div className="voice-connected-info" onClick={onView}>
-        <span className="voice-connected-status">🔊 Voice Connected</span>
+        <span className="voice-connected-status">
+          <Volume2 size={14} /> Voice Connected
+        </span>
         <span className="voice-connected-where">
           {voice.name} / {voice.serverName}
         </span>
@@ -30,10 +33,10 @@ export function VoiceConnectedPanel({
             localParticipant.setMicrophoneEnabled(!isMicrophoneEnabled)
           }
         >
-          {isMicrophoneEnabled ? '🎙️' : '🔇'}
+          {isMicrophoneEnabled ? <Mic size={16} /> : <MicOff size={16} />}
         </button>
         <button className="icon-btn icon-btn-danger" title="Disconnect" onClick={onLeave}>
-          ⏻
+          <PhoneOff size={16} />
         </button>
       </div>
     </div>

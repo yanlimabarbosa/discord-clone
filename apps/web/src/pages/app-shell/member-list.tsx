@@ -4,6 +4,7 @@ import { useSpeaking } from '../../hooks/realtime/use-speaking';
 import type { Member } from '../../types/member';
 import { Avatar } from '../../components/avatar';
 import { ProfileCard } from './profile-card';
+import { Volume2 } from 'lucide-react';
 
 type MemberListProps = {
   serverId: string | null;
@@ -37,7 +38,9 @@ function MemberRow({
       <div className="member-info">
         <span className="member-name">{member.displayName}</span>
         {member.voiceChannelId && (
-          <span className="member-voice">🔊 In voice</span>
+          <span className="member-voice">
+            <Volume2 size={12} /> In voice
+          </span>
         )}
       </div>
     </div>

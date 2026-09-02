@@ -1242,3 +1242,74 @@ button {
   background: var(--hover);
   white-space: nowrap;
 }
+
+/* ---------- Custom voice control bar ---------- */
+.vc-bar {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+.vc-ctrl-btn {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: #2b2d31;
+  color: #fff;
+  font-size: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition:
+    background 0.12s ease,
+    transform 0.1s ease;
+}
+.vc-ctrl-btn:hover {
+  background: #3a3c42;
+  transform: translateY(-2px);
+}
+.vc-ctrl-btn:active {
+  transform: scale(0.94);
+}
+.vc-ctrl-active {
+  background: var(--blurple);
+}
+.vc-ctrl-active:hover {
+  background: var(--blurple-hover);
+}
+.vc-ctrl-danger {
+  background: var(--danger);
+}
+.vc-ctrl-danger:hover {
+  background: #c93b3e;
+}
+.vc-ctrl-leave {
+  background: var(--danger);
+}
+.vc-ctrl-leave:hover {
+  background: #c93b3e;
+}
+.vc-ctrl-btn svg {
+  display: block;
+}
+
+/* icon alignment */
+.channel-icon svg,
+.header-members-btn svg,
+.icon-btn svg,
+.channel-add svg,
+.channel-edit svg,
+.server-add svg,
+.server-explore svg {
+  display: block;
+}
+.channel-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.member-voice,
+.voice-connected-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}

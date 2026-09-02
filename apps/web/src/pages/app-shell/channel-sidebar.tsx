@@ -11,6 +11,7 @@ import { CreateChannelDialog } from './create-channel-dialog';
 import { EditChannelDialog } from './edit-channel-dialog';
 import { ProfileCard } from './profile-card';
 import { VoiceConnectedPanel } from './voice/voice-connected-panel';
+import { Hash, Volume2, Plus, Pencil, LogOut } from 'lucide-react';
 
 type ChannelSidebarProps = {
   server: Server | null;
@@ -25,11 +26,6 @@ type ChannelSidebarProps = {
   onViewVoice: () => void;
   onLeaveVoice: () => void;
 };
-
-function channelGlyph(channel: Channel): string {
-  if (channel.icon) return channel.icon;
-  return channel.type === 'VOICE' ? '🔊' : '#';
-}
 
 export function ChannelSidebar({
   server,
@@ -85,7 +81,7 @@ export function ChannelSidebar({
                 title="Create channel"
                 onClick={() => setCreatingChannel(true)}
               >
-                +
+                <Plus size={16} />
               </button>
             </div>
             {channels.map((channel) => {
@@ -101,7 +97,15 @@ export function ChannelSidebar({
                     className={`channel-item ${channel.id === activeChannelId ? 'channel-item-active' : ''}`}
                     onClick={() => onSelectChannel(channel)}
                   >
-                    <span className="channel-icon">{channelGlyph(channel)}</span>
+                    <span className="channel-icon">
+                      {channel.icon ? (
+                        channel.icon
+                      ) : channel.type === 'VOICE' ? (
+                        <Volume2 size={18} />
+                      ) : (
+                        <Hash size={18} />
+                      )}
+                    </span>
                     <span className="channel-name">{channel.name}</span>
                     <button
                       className="channel-edit"
@@ -111,7 +115,7 @@ export function ChannelSidebar({
                         setEditing(channel);
                       }}
                     >
-                      ✎
+                      <Pencil size={14} />
                     </button>
                   </div>
                   {occupants.map((m) => (
@@ -174,7 +178,7 @@ export function ChannelSidebar({
           </span>
         </div>
         <button className="icon-btn" title="Log out" onClick={onLogout}>
-          ⏻
+          <LogOut size={16} />
         </button>
       </div>
 

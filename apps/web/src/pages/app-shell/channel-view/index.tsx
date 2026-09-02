@@ -1,3 +1,4 @@
+import { Hash, Users } from 'lucide-react';
 import type { Channel } from '../../../types/server';
 import { ChannelChat } from './channel-chat';
 
@@ -10,14 +11,16 @@ export function ChannelView({ channel, onToggleMembers }: ChannelViewProps) {
   return (
     <main className="content">
       <header className="content-header">
-        <span className="channel-icon">{channel.icon ?? '#'}</span>
+        <span className="channel-icon">
+          {channel.icon ? channel.icon : <Hash size={20} />}
+        </span>
         <span className="content-title">{channel.name}</span>
         <button
           className="header-members-btn"
           title="Toggle member list"
           onClick={onToggleMembers}
         >
-          👥
+          <Users size={20} />
         </button>
       </header>
       <ChannelChat channelId={channel.id} channelName={channel.name} />

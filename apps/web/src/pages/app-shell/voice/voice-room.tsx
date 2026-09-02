@@ -1,13 +1,13 @@
 import { useState } from 'react';
 import {
   useTracks,
-  ControlBar,
   RoomAudioRenderer,
   type TrackReferenceOrPlaceholder,
 } from '@livekit/components-react';
 import { Track } from 'livekit-client';
 import { ParticipantCard } from './participant-card';
 import { VoiceSounds } from './voice-sounds';
+import { VoiceControls } from './voice-controls';
 
 function trackKey(t: TrackReferenceOrPlaceholder): string {
   return `${t.participant.sid}-${t.source}`;
@@ -68,7 +68,7 @@ export function VoiceRoom() {
 
       <RoomAudioRenderer />
       <div className="vc-controls">
-        <ControlBar controls={{ chat: false, leave: true }} />
+        <VoiceControls />
       </div>
     </div>
   );
