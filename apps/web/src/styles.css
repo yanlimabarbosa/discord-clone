@@ -704,15 +704,14 @@ button {
   flex-wrap: wrap;
   gap: 12px;
   padding: 16px;
-  align-content: center;
+  align-content: flex-start;
   justify-content: center;
-  overflow: hidden;
+  overflow-y: auto;
 }
 .vc-tile {
   position: relative;
-  flex: 0 1 clamp(220px, 44%, 460px);
+  flex: 0 1 clamp(180px, 31%, 380px);
   aspect-ratio: 16 / 9;
-  max-height: 100%;
   background: #1e1f22;
   border-radius: 12px;
   overflow: hidden;
