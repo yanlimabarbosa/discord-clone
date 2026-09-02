@@ -1,6 +1,10 @@
 {$DOMAIN} {
-	handle /token* {
-		reverse_proxy token:3000
+	handle /api/* {
+		reverse_proxy api:3000
+	}
+
+	handle /socket.io/* {
+		reverse_proxy api:3000
 	}
 
 	handle /rtc* {

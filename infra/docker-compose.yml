@@ -1,4 +1,19 @@
 services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: "${POSTGRES_USER:-discord}"
+      POSTGRES_PASSWORD: "${POSTGRES_PASSWORD:-discord}"
+      POSTGRES_DB: "${POSTGRES_DB:-discord}"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-discord}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
   livekit:
     image: livekit/livekit-server:latest
     command: --config /etc/livekit.yaml
@@ -11,17 +26,27 @@ services:
       - "7882:7882/udp"
     restart: unless-stopped
 
-  token:
-    build: ../apps/token
+  api:
+    build: ../apps/api
+    image: discord-api:latest
     environment:
+      DATABASE_URL: "postgresql://${POSTGRES_USER:-discord}:${POSTGRES_PASSWORD:-discord}@postgres:5432/${POSTGRES_DB:-discord}?schema=public"
       LIVEKIT_API_KEY: "${LIVEKIT_API_KEY}"
       LIVEKIT_API_SECRET: "${LIVEKIT_API_SECRET}"
+      JWT_SECRET: "${JWT_SECRET}"
+      GOOGLE_CLIENT_ID: "${GOOGLE_CLIENT_ID:-}"
+      GOOGLE_CLIENT_SECRET: "${GOOGLE_CLIENT_SECRET:-}"
+      PUBLIC_URL: "https://${DOMAIN}"
+    depends_on:
+      postgres:
+        condition: service_healthy
     restart: unless-stopped
 
   caddy:
     build:
       context: ..
       dockerfile: infra/caddy/Dockerfile
+    image: discord-caddy:latest
     environment:
       DOMAIN: "${DOMAIN}"
     ports:
@@ -31,8 +56,11 @@ services:
       - ./Caddyfile:/etc/caddy/Caddyfile
       - caddy_data:/data
       - caddy_config:/config
+    depends_on:
+      - api
     restart: unless-stopped
 
 volumes:
+  postgres_data:
   caddy_data:
   caddy_config:

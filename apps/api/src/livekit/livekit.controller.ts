@@ -1,11 +1,11 @@
 import { BadRequestException, Controller, Get, Query } from '@nestjs/common';
-import { TokenService } from './token.service';
+import { LivekitService } from './livekit.service';
 
-@Controller('token')
-export class TokenController {
-  constructor(private readonly tokenService: TokenService) {}
+@Controller('livekit')
+export class LivekitController {
+  constructor(private readonly livekit: LivekitService) {}
 
-  @Get()
+  @Get('token')
   async getToken(
     @Query('room') room: string,
     @Query('identity') identity: string,
@@ -13,7 +13,7 @@ export class TokenController {
     if (!room || !identity) {
       throw new BadRequestException('room and identity are required');
     }
-    const token = await this.tokenService.createToken(room, identity);
+    const token = await this.livekit.createToken(room, identity);
     return { token };
   }
 }

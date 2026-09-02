@@ -64,16 +64,24 @@ sudo netfilter-persistent save >/dev/null 2>&1 || true
 
 echo "==> [4/5] .env"
 if [ ! -f .env ]; then
-  SECRET="$(openssl rand -hex 32)"
   cat > .env <<EOF
 DOMAIN=$DOMAIN
 LIVEKIT_API_KEY=devkey
-LIVEKIT_API_SECRET=$SECRET
+LIVEKIT_API_SECRET=$(openssl rand -hex 32)
+POSTGRES_USER=discord
+POSTGRES_PASSWORD=$(openssl rand -hex 16)
+POSTGRES_DB=discord
+JWT_SECRET=$(openssl rand -hex 32)
+GOOGLE_CLIENT_ID=
+GOOGLE_CLIENT_SECRET=
 EOF
-  echo "    created .env with a fresh secret."
+  echo "    created .env with fresh secrets."
 else
   sed -i "s/^DOMAIN=.*/DOMAIN=$DOMAIN/" .env
-  echo "    updated DOMAIN in existing .env."
+  grep -q '^JWT_SECRET=' .env || echo "JWT_SECRET=$(openssl rand -hex 32)" >> .env
+  grep -q '^POSTGRES_USER=' .env || printf 'POSTGRES_USER=discord\nPOSTGRES_PASSWORD=%s\nPOSTGRES_DB=discord\n' "$(openssl rand -hex 16)" >> .env
+  grep -q '^GOOGLE_CLIENT_ID=' .env || printf 'GOOGLE_CLIENT_ID=\nGOOGLE_CLIENT_SECRET=\n' >> .env
+  echo "    updated DOMAIN; ensured DB/JWT/Google vars exist."
 fi
 
 echo "==> [5/5] Build & launch"

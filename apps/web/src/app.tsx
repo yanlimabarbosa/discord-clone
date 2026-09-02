@@ -1,29 +1,17 @@
-import '@livekit/components-styles';
-import { LiveKitRoom, VideoConference } from '@livekit/components-react';
-import { JoinForm } from './join-form';
-import { useJoinRoom } from './use-join-room';
-
-const serverUrl = `wss://${window.location.host}`;
+import { useMe } from './hooks/auth/use-me';
+import { LandingPage } from './pages/landing';
+import { AppShell } from './pages/app-shell';
 
 export function App() {
-  const { token, error, connecting, join, leave } = useJoinRoom();
+  const { data: user, isLoading } = useMe();
 
-  if (token === '') {
-    return <JoinForm connecting={connecting} error={error} onJoin={join} />;
+  if (isLoading) {
+    return (
+      <div className="splash">
+        <div className="splash-logo">◇</div>
+      </div>
+    );
   }
 
-  return (
-    <div style={{ height: '100vh' }} data-lk-theme="default">
-      <LiveKitRoom
-        token={token}
-        serverUrl={serverUrl}
-        connect
-        video
-        audio
-        onDisconnected={leave}
-      >
-        <VideoConference />
-      </LiveKitRoom>
-    </div>
-  );
+  return user ? <AppShell /> : <LandingPage />;
 }
