@@ -6,6 +6,7 @@
   align-items: center;
   justify-content: center;
   z-index: 60;
+  animation: fadeIn 0.16s ease;
 }
 
 .profile-card {
@@ -15,6 +16,19 @@
   border-radius: 12px;
   overflow: hidden;
   box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
+  transform-origin: center;
+  animation: profilePop 0.24s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes profilePop {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.94);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 
 .profile-banner {
