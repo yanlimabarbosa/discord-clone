@@ -1,10 +1,11 @@
-import { useState } from 'react';
+import { useState, type MouseEvent } from 'react';
 import {
   useIsSpeaking,
   VideoTrack,
   type TrackReferenceOrPlaceholder,
 } from '@livekit/components-react';
-import { Track, RemoteParticipant } from 'livekit-client';
+import { Track, RemoteParticipant, LocalParticipant } from 'livekit-client';
+import { ParticipantContextMenu } from './participant-context-menu';
 
 type ParticipantCardProps = {
   trackRef: TrackReferenceOrPlaceholder;
@@ -18,9 +19,11 @@ export function ParticipantCard({ trackRef }: ParticipantCardProps) {
   const name = participant.name || participant.identity;
   const initial = name.charAt(0).toUpperCase();
   const isRemote = participant instanceof RemoteParticipant;
+  const isLocal = participant instanceof LocalParticipant;
 
   const [volume, setVolume] = useState(100);
   const [muted, setMuted] = useState(false);
+  const [menuPos, setMenuPos] = useState<{ x: number; y: number } | null>(null);
 
   function apply(vol: number, isMuted: boolean) {
     if (isRemote) {
@@ -38,8 +41,16 @@ export function ParticipantCard({ trackRef }: ParticipantCardProps) {
     apply(volume, next);
   }
 
+  function onContextMenu(e: MouseEvent) {
+    e.preventDefault();
+    setMenuPos({ x: e.clientX, y: e.clientY });
+  }
+
   return (
-    <div className={`vc-tile ${speaking && !isScreen ? 'vc-speaking' : ''}`}>
+    <div
+      className={`vc-tile ${speaking && !isScreen ? 'vc-speaking' : ''}`}
+      onContextMenu={onContextMenu}
+    >
       {hasVideo ? (
         <VideoTrack
           trackRef={trackRef as never}
@@ -57,20 +68,18 @@ export function ParticipantCard({ trackRef }: ParticipantCardProps) {
         {muted && !isScreen && ' 🔇'}
       </div>
 
-      {isRemote && !isScreen && (
-        <div className="vc-vol">
-          <button className="vc-vol-btn" onClick={toggleMute} title="Mute for me">
-            {muted ? '🔇' : '🔊'}
-          </button>
-          <input
-            className="vc-vol-slider"
-            type="range"
-            min={0}
-            max={100}
-            value={muted ? 0 : volume}
-            onChange={(e) => onVolume(Number(e.target.value))}
-          />
-        </div>
+      {menuPos && (
+        <ParticipantContextMenu
+          x={menuPos.x}
+          y={menuPos.y}
+          name={name}
+          isLocal={isLocal}
+          muted={muted}
+          volume={volume}
+          onToggleMute={toggleMute}
+          onVolumeChange={onVolume}
+          onClose={() => setMenuPos(null)}
+        />
       )}
     </div>
   );

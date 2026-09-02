@@ -1,0 +1,71 @@
+.vc-ctx {
+  position: fixed;
+  z-index: 1000;
+  width: 200px;
+  background: #111214;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+  padding: 6px;
+  color: var(--text);
+  font-size: 13px;
+  user-select: none;
+}
+
+.vc-ctx-header {
+  padding: 6px 8px 8px;
+  font-weight: 600;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  margin-bottom: 4px;
+}
+
+.vc-ctx-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+  padding: 7px 8px;
+  background: transparent;
+  border: none;
+  border-radius: 4px;
+  color: var(--text);
+  font-size: 13px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.vc-ctx-item:hover {
+  background: var(--blurple);
+  color: #fff;
+}
+
+.vc-ctx-note {
+  padding: 7px 8px;
+  color: rgba(255, 255, 255, 0.4);
+  font-style: italic;
+  cursor: default;
+}
+
+.vc-ctx-vol {
+  padding: 8px;
+}
+
+.vc-ctx-vol-label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 12px;
+}
+
+.vc-ctx-slider {
+  width: 100%;
+  accent-color: var(--blurple);
+  cursor: pointer;
+}

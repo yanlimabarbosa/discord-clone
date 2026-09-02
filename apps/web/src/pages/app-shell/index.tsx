@@ -3,6 +3,7 @@ import { LiveKitRoom, RoomAudioRenderer } from '@livekit/components-react';
 import { useAppShell } from './use-app-shell';
 import { ShellBody } from './shell-body';
 import { VoiceSignals } from './voice/voice-signals';
+import { LocalSpeakingRelay } from './voice/local-speaking-relay';
 
 const serverUrl =
   import.meta.env.VITE_LIVEKIT_URL || `wss://${window.location.host}`;
@@ -24,6 +25,7 @@ export function AppShell() {
       >
         <RoomAudioRenderer />
         <VoiceSignals channelId={shell.voice.id} />
+        <LocalSpeakingRelay />
         <ShellBody shell={shell} inVoice />
       </LiveKitRoom>
     );

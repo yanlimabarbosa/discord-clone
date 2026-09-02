@@ -1,10 +1,13 @@
 import { useState } from 'react';
 import type { Channel, Server } from '../../types/server';
 import type { PublicUser } from '../../types/user';
+import type { Member } from '../../types/member';
 import type { ActiveVoice } from './use-app-shell';
 import { useMembers } from '../../hooks/members/use-members';
+import { useSpeaking } from '../../hooks/realtime/use-speaking';
 import { CreateChannelDialog } from './create-channel-dialog';
 import { EditChannelDialog } from './edit-channel-dialog';
+import { ProfileCard } from './profile-card';
 import { VoiceConnectedPanel } from './voice/voice-connected-panel';
 
 type ChannelSidebarProps = {
@@ -41,7 +44,9 @@ export function ChannelSidebar({
 }: ChannelSidebarProps) {
   const [creatingChannel, setCreatingChannel] = useState(false);
   const [editing, setEditing] = useState<Channel | null>(null);
+  const [profile, setProfile] = useState<Member | null>(null);
   const { data: members } = useMembers(server?.id ?? null);
+  const speaking = useSpeaking();
   const initial = user?.displayName?.charAt(0).toUpperCase() ?? '?';
   const showVoicePanel = !!voice && inVoice;
 
@@ -101,8 +106,14 @@ export function ChannelSidebar({
                     </button>
                   </div>
                   {occupants.map((m) => (
-                    <div key={m.id} className="voice-occupant">
-                      <div className="avatar voice-occupant-avatar">
+                    <div
+                      key={m.id}
+                      className="voice-occupant"
+                      onClick={() => setProfile(m)}
+                    >
+                      <div
+                        className={`avatar voice-occupant-avatar ${speaking[m.id] ? 'avatar-speaking' : ''}`}
+                      >
                         {m.displayName.charAt(0).toUpperCase()}
                       </div>
                       <span className="voice-occupant-name">
@@ -150,6 +161,9 @@ export function ChannelSidebar({
           serverId={server.id}
           onClose={() => setEditing(null)}
         />
+      )}
+      {profile && (
+        <ProfileCard user={profile} onClose={() => setProfile(null)} />
       )}
     </aside>
   );

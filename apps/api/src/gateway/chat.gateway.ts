@@ -83,6 +83,21 @@ export class ChatGateway
     }
   }
 
+  @SubscribeMessage('voice.speaking')
+  onSpeaking(
+    @ConnectedSocket() c: Socket,
+    @MessageBody() b: { speaking: boolean },
+  ) {
+    const user = c.data.user;
+    if (!user) return;
+    const channelId = this.voiceByUser.get(user.id) ?? null;
+    this.server.emit('voice.speaking', {
+      userId: user.id,
+      channelId,
+      speaking: !!b?.speaking,
+    });
+  }
+
   @SubscribeMessage('typing.start')
   onTypingStart(@ConnectedSocket() c: Socket, @MessageBody() b: { channelId: string }) {
     this.emitTyping(c, b?.channelId, true);

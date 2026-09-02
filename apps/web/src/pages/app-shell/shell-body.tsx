@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { usePresenceRealtime } from '../../hooks/realtime/use-presence-realtime';
+import { useSpeakingRealtime } from '../../hooks/realtime/use-speaking-realtime';
 import { ServerRail } from './server-rail';
 import { ChannelSidebar } from './channel-sidebar';
 import { ChannelView } from './channel-view';
@@ -16,6 +17,7 @@ type ShellBodyProps = {
 
 export function ShellBody({ shell, inVoice }: ShellBodyProps) {
   usePresenceRealtime();
+  useSpeakingRealtime();
   const [creatingServer, setCreatingServer] = useState(false);
   const [inviting, setInviting] = useState(false);
   const [showMembers, setShowMembers] = useState(true);
