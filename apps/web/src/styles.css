@@ -618,3 +618,252 @@ button {
   padding: 0;
   overflow: hidden;
 }
+.vc-room {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background: #000;
+}
+.vc-grid {
+  flex: 1;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 12px;
+  padding: 16px;
+  align-content: center;
+  overflow-y: auto;
+}
+.vc-tile {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  background: #1e1f22;
+  border-radius: 12px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid transparent;
+  transition: border-color 0.1s ease;
+}
+.vc-speaking {
+  border-color: var(--green);
+}
+.vc-video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.vc-avatar-big {
+  width: 88px;
+  height: 88px;
+  border-radius: 50%;
+  background: var(--blurple);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 36px;
+  font-weight: 700;
+}
+.vc-name {
+  position: absolute;
+  left: 10px;
+  bottom: 10px;
+  background: rgba(0, 0, 0, 0.6);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: 6px;
+}
+.vc-vol {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(0, 0, 0, 0.6);
+  padding: 4px 8px;
+  border-radius: 8px;
+  opacity: 0;
+  transition: opacity 0.12s ease;
+}
+.vc-tile:hover .vc-vol {
+  opacity: 1;
+}
+.vc-vol-btn {
+  font-size: 14px;
+}
+.vc-vol-slider {
+  width: 80px;
+  accent-color: var(--blurple);
+}
+.vc-controls {
+  display: flex;
+  justify-content: center;
+  padding: 8px;
+  background: #1e1f22;
+}
+
+/* ---------- Channel item name + edit ---------- */
+.channel-item {
+  cursor: pointer;
+}
+.channel-name {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.channel-edit {
+  opacity: 0;
+  color: var(--text-faint);
+  font-size: 13px;
+  transition: opacity 0.1s ease, color 0.1s ease;
+}
+.channel-item:hover .channel-edit {
+  opacity: 1;
+}
+.channel-edit:hover {
+  color: var(--text);
+}
+
+/* ---------- Member list ---------- */
+.member-list {
+  width: 240px;
+  background: var(--sidebar);
+  padding: 16px 8px;
+  overflow-y: auto;
+  flex-shrink: 0;
+}
+.member-group-header {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  color: var(--text-faint);
+  padding: 12px 8px 4px;
+}
+.member-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 5px 8px;
+  border-radius: 4px;
+}
+.member-row:hover {
+  background: var(--hover);
+}
+.member-offline {
+  opacity: 0.4;
+}
+.member-avatar-wrap {
+  position: relative;
+}
+.member-avatar {
+  width: 32px;
+  height: 32px;
+  font-size: 13px;
+}
+.presence-dot {
+  position: absolute;
+  right: -2px;
+  bottom: -2px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 3px solid var(--sidebar);
+}
+.presence-online {
+  background: var(--green);
+}
+.presence-off {
+  background: #80848e;
+}
+.member-info {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.member-name {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text);
+}
+.member-voice {
+  font-size: 11px;
+  color: var(--green);
+}
+
+/* ---------- Voice connected panel ---------- */
+.voice-connected {
+  background: #232428;
+  border-top: 1px solid var(--rail);
+  padding: 8px 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.voice-connected-info {
+  display: flex;
+  flex-direction: column;
+  cursor: pointer;
+  min-width: 0;
+}
+.voice-connected-status {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--green);
+}
+.voice-connected-where {
+  font-size: 12px;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.voice-connected-actions {
+  display: flex;
+  gap: 2px;
+}
+.icon-btn-danger:hover {
+  color: var(--danger);
+}
+
+/* ---------- Voice occupants under channel ---------- */
+.voice-occupant {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 3px 8px 3px 26px;
+}
+.voice-occupant-avatar {
+  width: 24px;
+  height: 24px;
+  font-size: 11px;
+}
+.voice-occupant-name {
+  font-size: 14px;
+  color: var(--text-muted);
+}
+
+/* ---------- Modal split actions ---------- */
+.modal-actions-split {
+  justify-content: space-between;
+}
+.modal-actions-right {
+  display: flex;
+  gap: 8px;
+}
+.btn-danger {
+  padding: 10px 16px;
+  border-radius: var(--radius);
+  background: var(--danger);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 500;
+}
+.btn-danger:hover {
+  background: #c93b3e;
+}

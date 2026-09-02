@@ -55,6 +55,7 @@ model Channel {
   id        String      @id @default(cuid())
   serverId  String
   name      String
+  icon      String?
   type      ChannelType @default(TEXT)
   position  Int         @default(0)
   createdAt DateTime    @default(now())

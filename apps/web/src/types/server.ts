@@ -4,6 +4,7 @@ export type Channel = {
   id: string;
   serverId: string;
   name: string;
+  icon: string | null;
   type: ChannelType;
   position: number;
 };

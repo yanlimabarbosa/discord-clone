@@ -2,8 +2,10 @@ import {
   BadRequestException,
   Body,
   Controller,
+  Delete,
   Get,
   Param,
+  Patch,
   Post,
   UseGuards,
 } from '@nestjs/common';
@@ -32,5 +34,20 @@ export class ChannelsController {
     if (!name?.trim()) throw new BadRequestException('channel name required');
     const channelType: ChannelType = type === 'VOICE' ? 'VOICE' : 'TEXT';
     return this.channels.create(user.id, serverId, name, channelType);
+  }
+
+  @Patch('channels/:channelId')
+  update(
+    @CurrentUser() user: User,
+    @Param('channelId') channelId: string,
+    @Body('name') name?: string,
+    @Body('icon') icon?: string,
+  ) {
+    return this.channels.update(user.id, channelId, { name, icon });
+  }
+
+  @Delete('channels/:channelId')
+  remove(@CurrentUser() user: User, @Param('channelId') channelId: string) {
+    return this.channels.remove(user.id, channelId);
   }
 }

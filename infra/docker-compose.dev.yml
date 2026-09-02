@@ -1,0 +1,46 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: discord
+      POSTGRES_PASSWORD: discord
+      POSTGRES_DB: discord
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdev:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U discord"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  livekit:
+    image: livekit/livekit-server:latest
+    command: --config /etc/livekit.yaml
+    environment:
+      LIVEKIT_KEYS: "devkey: devsecret"
+    volumes:
+      - ./livekit.yaml:/etc/livekit.yaml
+    ports:
+      - "7880:7880"
+      - "7881:7881/tcp"
+      - "7882:7882/udp"
+
+  api:
+    build: ../apps/api
+    image: discord-api:latest
+    environment:
+      DATABASE_URL: "postgresql://discord:discord@postgres:5432/discord?schema=public"
+      LIVEKIT_API_KEY: "devkey"
+      LIVEKIT_API_SECRET: "devsecret"
+      JWT_SECRET: "devjwt"
+      PUBLIC_URL: "http://localhost:5173"
+    ports:
+      - "3000:3000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+volumes:
+  pgdev:

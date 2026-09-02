@@ -8,6 +8,7 @@ import { ServersModule } from './servers/servers.module';
 import { ChannelsModule } from './channels/channels.module';
 import { MessagesModule } from './messages/messages.module';
 import { InvitesModule } from './invites/invites.module';
+import { MembersModule } from './members/members.module';
 import { GatewayModule } from './gateway/gateway.module';
 
 @Module({
@@ -21,6 +22,7 @@ import { GatewayModule } from './gateway/gateway.module';
     ChannelsModule,
     MessagesModule,
     InvitesModule,
+    MembersModule,
   ],
   controllers: [HealthController],
 })
