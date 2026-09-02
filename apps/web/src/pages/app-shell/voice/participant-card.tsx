@@ -46,7 +46,9 @@ export function ParticipantCard({ trackRef }: ParticipantCardProps) {
           className="vc-video"
         />
       ) : (
-        <div className="vc-avatar-big">{initial}</div>
+        <div className={`vc-avatar-big ${speaking ? 'vc-avatar-speaking' : ''}`}>
+          {initial}
+        </div>
       )}
 
       <div className="vc-name">

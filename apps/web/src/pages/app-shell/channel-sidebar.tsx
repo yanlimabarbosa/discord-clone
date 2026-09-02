@@ -43,7 +43,7 @@ export function ChannelSidebar({
   const [editing, setEditing] = useState<Channel | null>(null);
   const { data: members } = useMembers(server?.id ?? null);
   const initial = user?.displayName?.charAt(0).toUpperCase() ?? '?';
-  const showVoicePanel = !!voice && inVoice && voice.id !== activeChannelId;
+  const showVoicePanel = !!voice && inVoice;
 
   return (
     <aside className="channel-sidebar">

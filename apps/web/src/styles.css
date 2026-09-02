@@ -430,6 +430,36 @@ button {
 .content-header {
   gap: 8px;
 }
+.header-members-btn {
+  margin-left: auto;
+  font-size: 18px;
+  padding: 4px 8px;
+  border-radius: 6px;
+}
+.header-members-btn:hover {
+  background: var(--hover);
+}
+
+/* ---------- Voice stage split (video + chat) ---------- */
+.voice-split {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+.voice-stage-video {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+}
+.voice-stage-chat {
+  height: 40%;
+  min-height: 200px;
+  display: flex;
+  flex-direction: column;
+  border-top: 1px solid var(--rail);
+  background: var(--content);
+}
 
 /* ---------- Messages ---------- */
 .message-list {
@@ -664,6 +694,11 @@ button {
   justify-content: center;
   font-size: 36px;
   font-weight: 700;
+  box-shadow: 0 0 0 0 var(--green);
+  transition: box-shadow 0.1s ease;
+}
+.vc-avatar-speaking {
+  box-shadow: 0 0 0 4px var(--green);
 }
 .vc-name {
   position: absolute;

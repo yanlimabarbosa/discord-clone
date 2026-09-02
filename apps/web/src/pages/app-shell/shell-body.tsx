@@ -18,6 +18,8 @@ export function ShellBody({ shell, inVoice }: ShellBodyProps) {
   usePresenceRealtime();
   const [creatingServer, setCreatingServer] = useState(false);
   const [inviting, setInviting] = useState(false);
+  const [showMembers, setShowMembers] = useState(true);
+  const toggleMembers = () => setShowMembers((s) => !s);
 
   const viewed = shell.activeChannel;
   const viewingConnectedVoice =
@@ -47,7 +49,7 @@ export function ShellBody({ shell, inVoice }: ShellBodyProps) {
 
       {viewed?.type === 'VOICE' ? (
         viewingConnectedVoice && shell.voice ? (
-          <VoiceStage voice={shell.voice} />
+          <VoiceStage voice={shell.voice} onToggleMembers={toggleMembers} />
         ) : (
           <main className="content">
             <div className="content-empty">
@@ -57,7 +59,7 @@ export function ShellBody({ shell, inVoice }: ShellBodyProps) {
           </main>
         )
       ) : viewed?.type === 'TEXT' ? (
-        <ChannelView channel={viewed} />
+        <ChannelView channel={viewed} onToggleMembers={toggleMembers} />
       ) : (
         <main className="content">
           <div className="content-empty">
@@ -68,7 +70,7 @@ export function ShellBody({ shell, inVoice }: ShellBodyProps) {
         </main>
       )}
 
-      <MemberList serverId={shell.activeServerId} />
+      {showMembers && <MemberList serverId={shell.activeServerId} />}
 
       {creatingServer && (
         <CreateServerDialog onClose={() => setCreatingServer(false)} />
