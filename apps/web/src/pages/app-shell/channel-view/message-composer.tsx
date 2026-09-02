@@ -3,9 +3,14 @@ import { useState, KeyboardEvent } from 'react';
 type MessageComposerProps = {
   channelName: string;
   onSend: (content: string) => void;
+  onTyping?: () => void;
 };
 
-export function MessageComposer({ channelName, onSend }: MessageComposerProps) {
+export function MessageComposer({
+  channelName,
+  onSend,
+  onTyping,
+}: MessageComposerProps) {
   const [draft, setDraft] = useState('');
 
   function submit() {
@@ -29,7 +34,10 @@ export function MessageComposer({ channelName, onSend }: MessageComposerProps) {
         rows={1}
         placeholder={`Message #${channelName}`}
         value={draft}
-        onChange={(e) => setDraft(e.target.value)}
+        onChange={(e) => {
+          setDraft(e.target.value);
+          if (e.target.value) onTyping?.();
+        }}
         onKeyDown={onKeyDown}
       />
     </div>

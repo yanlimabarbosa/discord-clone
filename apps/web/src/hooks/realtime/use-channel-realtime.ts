@@ -17,11 +17,29 @@ export function useChannelRealtime(channelId: string | null) {
         old.some((m) => m.id === message.id) ? old : [...old, message],
       );
     };
+
+    const onUpdate = (message: Message) => {
+      if (message.channelId !== channelId) return;
+      qc.setQueryData<Message[]>(['messages', channelId], (old = []) =>
+        old.map((m) => (m.id === message.id ? message : m)),
+      );
+    };
+
+    const onDelete = ({ id }: { id: string }) => {
+      qc.setQueryData<Message[]>(['messages', channelId], (old = []) =>
+        old.filter((m) => m.id !== id),
+      );
+    };
+
     socket.on('message.new', onNew);
+    socket.on('message.update', onUpdate);
+    socket.on('message.delete', onDelete);
 
     return () => {
       socket.emit('channel.leave', { channelId });
       socket.off('message.new', onNew);
+      socket.off('message.update', onUpdate);
+      socket.off('message.delete', onDelete);
     };
   }, [channelId, qc]);
 }

@@ -32,11 +32,20 @@ export class MessagesController {
     @CurrentUser() user: User,
     @Param('channelId') channelId: string,
     @Body('content') content: string,
+    @Body('replyToId') replyToId?: string,
+    @Body('attachmentUrl') attachmentUrl?: string,
+    @Body('attachmentType') attachmentType?: string,
   ) {
-    if (!content?.trim()) throw new BadRequestException('content required');
-    if (content.length > 4000) {
+    if (!content?.trim() && !attachmentUrl) {
+      throw new BadRequestException('content required');
+    }
+    if ((content ?? '').length > 4000) {
       throw new BadRequestException('message too long');
     }
-    return this.messages.create(user.id, channelId, content);
+    return this.messages.create(user.id, channelId, content ?? '', {
+      replyToId,
+      attachmentUrl,
+      attachmentType,
+    });
   }
 }

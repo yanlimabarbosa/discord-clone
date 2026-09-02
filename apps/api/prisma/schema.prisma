@@ -7,25 +7,25 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// A user can be a guest (nickname only), a password account (username+passwordHash),
-// or a Google account (googleId+email). All three are real, persistent users.
 model User {
   id           String   @id @default(cuid())
   displayName  String
   avatarUrl    String?
   isGuest      Boolean  @default(false)
-  username     String?  @unique // login handle for password accounts
+  username     String?  @unique
   passwordHash String?
   email        String?  @unique
   googleId     String?  @unique
   createdAt    DateTime @default(now())
 
-  memberships       ServerMember[]
-  messages          Message[]
-  ownedServers      Server[]       @relation("ServerOwner")
-  createdInvites    Invite[]       @relation("InviteCreator")
-  sentFriendReqs    Friendship[]   @relation("FriendRequester")
-  recvFriendReqs    Friendship[]   @relation("FriendAddressee")
+  memberships    ServerMember[]
+  messages       Message[]
+  ownedServers   Server[]       @relation("ServerOwner")
+  createdInvites Invite[]       @relation("InviteCreator")
+  sentFriendReqs Friendship[]   @relation("FriendRequester")
+  recvFriendReqs Friendship[]   @relation("FriendAddressee")
+  reactions      Reaction[]
+  conversations  ConversationParticipant[]
 }
 
 model Server {
@@ -36,9 +36,11 @@ model Server {
   isPublic  Boolean  @default(true)
   createdAt DateTime @default(now())
   owner     User     @relation("ServerOwner", fields: [ownerId], references: [id], onDelete: Cascade)
-  members   ServerMember[]
-  channels  Channel[]
-  invites   Invite[]
+  members    ServerMember[]
+  channels   Channel[]
+  invites    Invite[]
+  categories ChannelCategory[]
+  bans       ServerBan[]
 }
 
 model ServerMember {
@@ -52,16 +54,37 @@ model ServerMember {
   @@unique([serverId, userId])
 }
 
+model ServerBan {
+  id       String   @id @default(cuid())
+  serverId String
+  userId   String
+  createdAt DateTime @default(now())
+  server   Server   @relation(fields: [serverId], references: [id], onDelete: Cascade)
+
+  @@unique([serverId, userId])
+}
+
+model ChannelCategory {
+  id       String    @id @default(cuid())
+  serverId String
+  name     String
+  position Int       @default(0)
+  server   Server    @relation(fields: [serverId], references: [id], onDelete: Cascade)
+  channels Channel[]
+}
+
 model Channel {
-  id        String      @id @default(cuid())
-  serverId  String
-  name      String
-  icon      String?
-  type      ChannelType @default(TEXT)
-  position  Int         @default(0)
-  createdAt DateTime    @default(now())
-  server    Server      @relation(fields: [serverId], references: [id], onDelete: Cascade)
-  messages  Message[]
+  id         String           @id @default(cuid())
+  serverId   String
+  categoryId String?
+  name       String
+  icon       String?
+  type       ChannelType      @default(TEXT)
+  position   Int              @default(0)
+  createdAt  DateTime         @default(now())
+  server     Server           @relation(fields: [serverId], references: [id], onDelete: Cascade)
+  category   ChannelCategory? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  messages   Message[]
 }
 
 enum ChannelType {
@@ -69,26 +92,71 @@ enum ChannelType {
   VOICE
 }
 
-model Message {
-  id        String    @id @default(cuid())
-  channelId String
-  authorId  String
-  content   String
-  createdAt DateTime  @default(now())
-  editedAt  DateTime?
-  channel   Channel   @relation(fields: [channelId], references: [id], onDelete: Cascade)
-  author    User      @relation(fields: [authorId], references: [id], onDelete: Cascade)
-
-  @@index([channelId, createdAt])
+model Conversation {
+  id           String                    @id @default(cuid())
+  createdAt    DateTime                  @default(now())
+  participants ConversationParticipant[]
+  messages     Message[]
 }
 
-// Shareable link that grants membership to a server when redeemed.
+model ConversationParticipant {
+  id             String       @id @default(cuid())
+  conversationId String
+  userId         String
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([conversationId, userId])
+}
+
+model Message {
+  id             String        @id @default(cuid())
+  channelId      String?
+  conversationId String?
+  authorId       String
+  content        String
+  attachmentUrl  String?
+  attachmentType String?
+  replyToId      String?
+  createdAt      DateTime      @default(now())
+  editedAt       DateTime?
+  channel        Channel?      @relation(fields: [channelId], references: [id], onDelete: Cascade)
+  conversation   Conversation? @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  author         User          @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  replyTo        Message?      @relation("MessageReplies", fields: [replyToId], references: [id], onDelete: SetNull)
+  replies        Message[]     @relation("MessageReplies")
+  reactions      Reaction[]
+
+  @@index([channelId, createdAt])
+  @@index([conversationId, createdAt])
+}
+
+model Reaction {
+  id        String  @id @default(cuid())
+  messageId String
+  userId    String
+  emoji     String
+  message   Message @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([messageId, userId, emoji])
+}
+
+model ReadState {
+  id         String   @id @default(cuid())
+  userId     String
+  channelId  String
+  lastReadAt DateTime @default(now())
+
+  @@unique([userId, channelId])
+}
+
 model Invite {
   id          String    @id @default(cuid())
   code        String    @unique
   serverId    String
   createdById String
-  maxUses     Int? // null = unlimited
+  maxUses     Int?
   uses        Int       @default(0)
   expiresAt   DateTime?
   createdAt   DateTime  @default(now())

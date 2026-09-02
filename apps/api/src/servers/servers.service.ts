@@ -1,8 +1,11 @@
 import {
+  BadRequestException,
   ForbiddenException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+import { mkdirSync, writeFileSync } from 'fs';
+import { join, extname } from 'path';
 import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
@@ -59,11 +62,99 @@ export class ServersService {
 
   async join(userId: string, serverId: string) {
     const server = await this.getServer(serverId);
+    await this.assertNotBanned(userId, serverId);
     if (!server.isPublic) {
       throw new ForbiddenException('this server is invite-only');
     }
     await this.ensureMember(userId, serverId);
     return server;
+  }
+
+  async rename(userId: string, serverId: string, name: string) {
+    await this.assertOwner(userId, serverId);
+    return this.prisma.server.update({
+      where: { id: serverId },
+      data: { name: name.trim() },
+    });
+  }
+
+  async setIconUrl(userId: string, serverId: string, iconUrl: string) {
+    await this.assertOwner(userId, serverId);
+    return this.prisma.server.update({
+      where: { id: serverId },
+      data: { iconUrl },
+    });
+  }
+
+  async setIconFromFile(
+    userId: string,
+    serverId: string,
+    file: { originalname: string; buffer: Buffer },
+  ) {
+    await this.assertOwner(userId, serverId);
+    const dir = join(process.cwd(), 'uploads');
+    mkdirSync(dir, { recursive: true });
+    const ext = extname(file.originalname) || '.png';
+    const filename = `server-${serverId}-${Date.now()}${ext}`;
+    writeFileSync(join(dir, filename), file.buffer);
+    return this.prisma.server.update({
+      where: { id: serverId },
+      data: { iconUrl: `/api/uploads/${filename}` },
+    });
+  }
+
+  async remove(userId: string, serverId: string) {
+    await this.assertOwner(userId, serverId);
+    await this.prisma.server.delete({ where: { id: serverId } });
+    return { ok: true };
+  }
+
+  async leave(userId: string, serverId: string) {
+    const server = await this.getServer(serverId);
+    if (server.ownerId === userId) {
+      throw new ForbiddenException('owner must delete or transfer the server');
+    }
+    await this.prisma.serverMember.deleteMany({ where: { serverId, userId } });
+    return { ok: true };
+  }
+
+  async kick(userId: string, serverId: string, targetId: string) {
+    await this.assertOwner(userId, serverId);
+    if (targetId === userId) throw new BadRequestException("can't kick yourself");
+    await this.prisma.serverMember.deleteMany({
+      where: { serverId, userId: targetId },
+    });
+    return { ok: true };
+  }
+
+  async ban(userId: string, serverId: string, targetId: string) {
+    await this.assertOwner(userId, serverId);
+    if (targetId === userId) throw new BadRequestException("can't ban yourself");
+    await this.prisma.$transaction([
+      this.prisma.serverMember.deleteMany({
+        where: { serverId, userId: targetId },
+      }),
+      this.prisma.serverBan.upsert({
+        where: { serverId_userId: { serverId, userId: targetId } },
+        create: { serverId, userId: targetId },
+        update: {},
+      }),
+    ]);
+    return { ok: true };
+  }
+
+  async assertOwner(userId: string, serverId: string) {
+    const server = await this.getServer(serverId);
+    if (server.ownerId !== userId) {
+      throw new ForbiddenException('owner only');
+    }
+  }
+
+  async assertNotBanned(userId: string, serverId: string) {
+    const ban = await this.prisma.serverBan.findUnique({
+      where: { serverId_userId: { serverId, userId } },
+    });
+    if (ban) throw new ForbiddenException('you are banned from this server');
   }
 
   async setPrivacy(userId: string, serverId: string, isPublic: boolean) {
@@ -82,6 +173,7 @@ export class ServersService {
       where: { serverId_userId: { serverId, userId } },
     });
     if (!existing) {
+      await this.assertNotBanned(userId, serverId);
       await this.prisma.serverMember.create({ data: { serverId, userId } });
     }
   }

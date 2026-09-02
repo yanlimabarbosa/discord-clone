@@ -62,6 +62,16 @@ export class ChatGateway
     if (b?.channelId) c.leave(b.channelId);
   }
 
+  @SubscribeMessage('dm.join')
+  onDmJoin(@ConnectedSocket() c: Socket, @MessageBody() b: { conversationId: string }) {
+    if (b?.conversationId) c.join(`dm:${b.conversationId}`);
+  }
+
+  @SubscribeMessage('dm.leave')
+  onDmLeave(@ConnectedSocket() c: Socket, @MessageBody() b: { conversationId: string }) {
+    if (b?.conversationId) c.leave(`dm:${b.conversationId}`);
+  }
+
   @SubscribeMessage('voice.join')
   onVoiceJoin(
     @ConnectedSocket() c: Socket,
@@ -110,6 +120,18 @@ export class ChatGateway
 
   broadcastMessage(channelId: string, message: unknown) {
     this.server.to(channelId).emit('message.new', message);
+  }
+
+  broadcastMessageUpdate(channelId: string, message: unknown) {
+    this.server.to(channelId).emit('message.update', message);
+  }
+
+  broadcastMessageDelete(channelId: string, messageId: string) {
+    this.server.to(channelId).emit('message.delete', { id: messageId });
+  }
+
+  broadcastDm(conversationId: string, message: unknown) {
+    this.server.to(`dm:${conversationId}`).emit('dm.new', message);
   }
 
   getPresence(userId: string): Presence {
