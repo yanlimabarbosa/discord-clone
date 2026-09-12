@@ -38,8 +38,15 @@ export class DmsController {
     @CurrentUser() user: User,
     @Param('id') id: string,
     @Body('content') content: string,
+    @Body('attachmentUrl') attachmentUrl?: string,
+    @Body('attachmentType') attachmentType?: string,
   ) {
-    if (!content?.trim()) throw new BadRequestException('content required');
-    return this.dms.send(user.id, id, content);
+    if (!content?.trim() && !attachmentUrl) {
+      throw new BadRequestException('content or attachment required');
+    }
+    return this.dms.send(user.id, id, content ?? '', {
+      attachmentUrl,
+      attachmentType,
+    });
   }
 }

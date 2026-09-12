@@ -1,0 +1,74 @@
+.attach-tray {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding: 10px 4px 2px;
+}
+
+.attach-thumb {
+  position: relative;
+  width: 96px;
+  height: 96px;
+  border-radius: 10px;
+  overflow: hidden;
+  background: var(--raised);
+  border: 1px solid var(--line-soft);
+}
+
+.attach-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.attach-thumb.attach-error {
+  border-color: var(--danger);
+}
+
+.attach-remove {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 22px;
+  height: 22px;
+  display: grid;
+  place-items: center;
+  border: none;
+  border-radius: 6px;
+  background: rgba(11, 12, 17, 0.75);
+  color: #fff;
+  cursor: pointer;
+  transition: background 0.12s ease;
+}
+
+.attach-remove:hover {
+  background: var(--danger);
+}
+
+.attach-spinner {
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: 3px solid rgba(255, 255, 255, 0.25);
+  border-top-color: #fff;
+  animation: attach-spin 0.7s linear infinite;
+}
+
+@keyframes attach-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.attach-err-label {
+  position: absolute;
+  inset: auto 0 0 0;
+  background: var(--danger);
+  color: #fff;
+  font-size: 11px;
+  text-align: center;
+  padding: 2px;
+}

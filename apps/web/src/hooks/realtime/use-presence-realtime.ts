@@ -15,13 +15,21 @@ export function usePresenceRealtime() {
   useEffect(() => {
     const socket = getSocket();
     const onPresence = (e: PresenceEvent) => {
+      let matched = false;
       qc.setQueriesData<Member[]>({ queryKey: ['members'] }, (old) =>
-        old?.map((m) =>
-          m.id === e.userId
-            ? { ...m, online: e.online, voiceChannelId: e.voiceChannelId }
-            : m,
-        ),
+        old?.map((m) => {
+          if (m.id === e.userId) {
+            matched = true;
+            return { ...m, online: e.online, voiceChannelId: e.voiceChannelId };
+          }
+          return m;
+        }),
       );
+      // A member we don't have cached just entered voice → refetch so they
+      // appear under the channel immediately.
+      if (!matched && e.voiceChannelId) {
+        qc.invalidateQueries({ queryKey: ['members'] });
+      }
     };
     socket.on('presence', onPresence);
     return () => {

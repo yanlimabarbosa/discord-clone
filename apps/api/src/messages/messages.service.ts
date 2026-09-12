@@ -52,7 +52,7 @@ export class MessagesService {
     content: string,
     opts: { replyToId?: string; attachmentUrl?: string; attachmentType?: string } = {},
   ) {
-    await this.assertAccess(userId, channelId);
+    const serverId = await this.assertAccess(userId, channelId);
     const message = await this.prisma.message.create({
       data: {
         channelId,
@@ -65,7 +65,32 @@ export class MessagesService {
       select: MESSAGE_SELECT,
     });
     this.gateway.broadcastMessage(channelId, message);
+    const { mentionsEveryone, mentionedUserIds } = await this.parseMentions(
+      serverId,
+      message.content,
+    );
+    this.gateway.broadcastChannelActivity(serverId, {
+      channelId,
+      serverId,
+      authorId: userId,
+      mentionsEveryone,
+      mentionedUserIds,
+    });
     return message;
+  }
+
+  private async parseMentions(serverId: string, content: string) {
+    const lower = content.toLowerCase();
+    const mentionsEveryone =
+      lower.includes('@everyone') || lower.includes('@here');
+    const members = await this.prisma.serverMember.findMany({
+      where: { serverId },
+      select: { user: { select: { id: true, displayName: true } } },
+    });
+    const mentionedUserIds = members
+      .filter((m) => lower.includes(`@${m.user.displayName.toLowerCase()}`))
+      .map((m) => m.user.id);
+    return { mentionsEveryone, mentionedUserIds };
   }
 
   async edit(userId: string, messageId: string, content: string) {
@@ -123,12 +148,13 @@ export class MessagesService {
     return message;
   }
 
-  private async assertAccess(userId: string, channelId: string) {
+  private async assertAccess(userId: string, channelId: string): Promise<string> {
     const channel = await this.prisma.channel.findUnique({
       where: { id: channelId },
       select: { serverId: true },
     });
     if (!channel) throw new NotFoundException('channel not found');
     await this.servers.assertCanView(userId, channel.serverId);
+    return channel.serverId;
   }
 }

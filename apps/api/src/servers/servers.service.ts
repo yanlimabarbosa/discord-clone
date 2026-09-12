@@ -7,10 +7,15 @@ import {
 import { mkdirSync, writeFileSync } from 'fs';
 import { join, extname } from 'path';
 import { PrismaService } from '../prisma/prisma.service';
+import { PermissionsService } from '../permissions/permissions.service';
+import { Permissions } from '../permissions/permissions';
 
 @Injectable()
 export class ServersService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly permissions: PermissionsService,
+  ) {}
 
   async create(userId: string, name: string) {
     return this.prisma.server.create({
@@ -71,7 +76,7 @@ export class ServersService {
   }
 
   async rename(userId: string, serverId: string, name: string) {
-    await this.assertOwner(userId, serverId);
+    await this.permissions.assert(userId, serverId, Permissions.MANAGE_SERVER);
     return this.prisma.server.update({
       where: { id: serverId },
       data: { name: name.trim() },
@@ -79,7 +84,7 @@ export class ServersService {
   }
 
   async setIconUrl(userId: string, serverId: string, iconUrl: string) {
-    await this.assertOwner(userId, serverId);
+    await this.permissions.assert(userId, serverId, Permissions.MANAGE_SERVER);
     return this.prisma.server.update({
       where: { id: serverId },
       data: { iconUrl },
@@ -91,7 +96,7 @@ export class ServersService {
     serverId: string,
     file: { originalname: string; buffer: Buffer },
   ) {
-    await this.assertOwner(userId, serverId);
+    await this.permissions.assert(userId, serverId, Permissions.MANAGE_SERVER);
     const dir = join(process.cwd(), 'uploads');
     mkdirSync(dir, { recursive: true });
     const ext = extname(file.originalname) || '.png';
@@ -119,8 +124,9 @@ export class ServersService {
   }
 
   async kick(userId: string, serverId: string, targetId: string) {
-    await this.assertOwner(userId, serverId);
+    await this.permissions.assert(userId, serverId, Permissions.KICK_MEMBERS);
     if (targetId === userId) throw new BadRequestException("can't kick yourself");
+    await this.assertNotOwner(serverId, targetId);
     await this.prisma.serverMember.deleteMany({
       where: { serverId, userId: targetId },
     });
@@ -128,8 +134,9 @@ export class ServersService {
   }
 
   async ban(userId: string, serverId: string, targetId: string) {
-    await this.assertOwner(userId, serverId);
+    await this.permissions.assert(userId, serverId, Permissions.BAN_MEMBERS);
     if (targetId === userId) throw new BadRequestException("can't ban yourself");
+    await this.assertNotOwner(serverId, targetId);
     await this.prisma.$transaction([
       this.prisma.serverMember.deleteMany({
         where: { serverId, userId: targetId },
@@ -158,14 +165,18 @@ export class ServersService {
   }
 
   async setPrivacy(userId: string, serverId: string, isPublic: boolean) {
-    const server = await this.getServer(serverId);
-    if (server.ownerId !== userId) {
-      throw new ForbiddenException('only the owner can change privacy');
-    }
+    await this.permissions.assert(userId, serverId, Permissions.MANAGE_SERVER);
     return this.prisma.server.update({
       where: { id: serverId },
       data: { isPublic },
     });
+  }
+
+  private async assertNotOwner(serverId: string, targetId: string) {
+    const server = await this.getServer(serverId);
+    if (server.ownerId === targetId) {
+      throw new ForbiddenException("can't target the server owner");
+    }
   }
 
   async ensureMember(userId: string, serverId: string) {

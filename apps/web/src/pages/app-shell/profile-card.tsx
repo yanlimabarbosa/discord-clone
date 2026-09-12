@@ -13,9 +13,16 @@ export type ProfileCardUser = {
 type ProfileCardProps = {
   user: ProfileCardUser;
   onClose: () => void;
+  onMessage?: (userId: string) => void;
+  isSelf?: boolean;
 };
 
-export function ProfileCard({ user, onClose }: ProfileCardProps) {
+export function ProfileCard({
+  user,
+  onClose,
+  onMessage,
+  isSelf,
+}: ProfileCardProps) {
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose();
@@ -59,9 +66,18 @@ export function ProfileCard({ user, onClose }: ProfileCardProps) {
             <span>{isOnline ? 'Online' : 'Offline'}</span>
           </div>
 
-          <button className="profile-message-btn" disabled>
-            Message (soon)
-          </button>
+          {!isSelf && (
+            <button
+              className="profile-message-btn"
+              onClick={() => {
+                onMessage?.(user.id);
+                onClose();
+              }}
+              disabled={!onMessage}
+            >
+              Message
+            </button>
+          )}
         </div>
       </div>
     </div>

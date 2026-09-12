@@ -5,8 +5,10 @@ import {
   type TrackReferenceOrPlaceholder,
 } from '@livekit/components-react';
 import { Track, RemoteParticipant, LocalParticipant } from 'livekit-client';
-import { Maximize2 } from 'lucide-react';
+import { Maximize2, MicOff, HeadphoneOff } from 'lucide-react';
 import { ParticipantContextMenu } from './participant-context-menu';
+import { useParticipantMuted } from '../../../hooks/voice/use-participant-muted';
+import { useDeafenState } from '../../../hooks/voice/use-deafen-state';
 
 type ParticipantCardProps = {
   trackRef: TrackReferenceOrPlaceholder;
@@ -16,6 +18,8 @@ type ParticipantCardProps = {
 export function ParticipantCard({ trackRef, onSelect }: ParticipantCardProps) {
   const participant = trackRef.participant;
   const speaking = useIsSpeaking(participant);
+  const micMuted = useParticipantMuted(participant);
+  const isDeafened = !!useDeafenState()[participant.identity];
   const isScreen = trackRef.source === Track.Source.ScreenShare;
   const hasVideo = !!trackRef.publication && !trackRef.publication.isMuted;
   const name = participant.name || participant.identity;
@@ -35,7 +39,13 @@ export function ParticipantCard({ trackRef, onSelect }: ParticipantCardProps) {
 
   function apply(vol: number, isMuted: boolean) {
     if (isRemote) {
-      (participant as RemoteParticipant).setVolume(isMuted ? 0 : vol / 100);
+      const source = isScreen
+        ? Track.Source.ScreenShareAudio
+        : Track.Source.Microphone;
+      (participant as RemoteParticipant).setVolume(
+        isMuted ? 0 : vol / 100,
+        source,
+      );
     }
   }
   function onVolume(v: number) {
@@ -82,10 +92,27 @@ export function ParticipantCard({ trackRef, onSelect }: ParticipantCardProps) {
         </button>
       )}
 
+      {!isScreen && (isDeafened || micMuted) && (
+        <div className="vc-status-badge" title={isDeafened ? 'Deafened' : 'Muted'}>
+          {isDeafened ? <HeadphoneOff size={16} /> : <MicOff size={16} />}
+        </div>
+      )}
+
       <div className="vc-name">
-        {name}
-        {isScreen && ' — screen'}
-        {muted && !isScreen && ' 🔇'}
+        <span>
+          {name}
+          {isScreen && ' — screen'}
+        </span>
+        {!isScreen && (isDeafened || micMuted) && (
+          <span className="vc-name-icon">
+            {isDeafened ? <HeadphoneOff size={14} /> : <MicOff size={14} />}
+          </span>
+        )}
+        {muted && (
+          <span className="vc-name-icon" title="Silenced by you">
+            🔇
+          </span>
+        )}
       </div>
 
       {menuPos && (

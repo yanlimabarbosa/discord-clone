@@ -50,4 +50,51 @@ export class ChannelsController {
   remove(@CurrentUser() user: User, @Param('channelId') channelId: string) {
     return this.channels.remove(user.id, channelId);
   }
+
+  @Get('servers/:serverId/categories')
+  listCategories(
+    @CurrentUser() user: User,
+    @Param('serverId') serverId: string,
+  ) {
+    return this.channels.listCategories(user.id, serverId);
+  }
+
+  @Post('servers/:serverId/categories')
+  createCategory(
+    @CurrentUser() user: User,
+    @Param('serverId') serverId: string,
+    @Body('name') name: string,
+  ) {
+    if (!name?.trim()) throw new BadRequestException('category name required');
+    return this.channels.createCategory(user.id, serverId, name);
+  }
+
+  @Patch('categories/:categoryId')
+  renameCategory(
+    @CurrentUser() user: User,
+    @Param('categoryId') categoryId: string,
+    @Body('name') name: string,
+  ) {
+    if (!name?.trim()) throw new BadRequestException('category name required');
+    return this.channels.renameCategory(user.id, categoryId, name);
+  }
+
+  @Delete('categories/:categoryId')
+  deleteCategory(
+    @CurrentUser() user: User,
+    @Param('categoryId') categoryId: string,
+  ) {
+    return this.channels.deleteCategory(user.id, categoryId);
+  }
+
+  @Patch('servers/:serverId/channels/reorder')
+  reorder(
+    @CurrentUser() user: User,
+    @Param('serverId') serverId: string,
+    @Body('items')
+    items: { id: string; categoryId: string | null; position: number }[],
+  ) {
+    if (!Array.isArray(items)) throw new BadRequestException('items required');
+    return this.channels.reorder(user.id, serverId, items);
+  }
 }

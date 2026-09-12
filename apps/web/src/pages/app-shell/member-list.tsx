@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useMembers } from '../../hooks/members/use-members';
 import { useSpeaking } from '../../hooks/realtime/use-speaking';
+import { useMe } from '../../hooks/auth/use-me';
 import type { Member } from '../../types/member';
 import { Avatar } from '../../components/avatar';
 import { ProfileCard } from './profile-card';
@@ -8,6 +9,7 @@ import { Volume2 } from 'lucide-react';
 
 type MemberListProps = {
   serverId: string | null;
+  onMessageUser?: (userId: string) => void;
 };
 
 function MemberRow({
@@ -47,8 +49,9 @@ function MemberRow({
   );
 }
 
-export function MemberList({ serverId }: MemberListProps) {
+export function MemberList({ serverId, onMessageUser }: MemberListProps) {
   const { data: members } = useMembers(serverId);
+  const { data: me } = useMe();
   const [profile, setProfile] = useState<Member | null>(null);
   if (!serverId) return null;
 
@@ -68,7 +71,12 @@ export function MemberList({ serverId }: MemberListProps) {
         <MemberRow key={m.id} member={m} onOpenProfile={setProfile} />
       ))}
       {profile && (
-        <ProfileCard user={profile} onClose={() => setProfile(null)} />
+        <ProfileCard
+          user={profile}
+          isSelf={profile.id === me?.id}
+          onMessage={onMessageUser}
+          onClose={() => setProfile(null)}
+        />
       )}
     </aside>
   );

@@ -10,12 +10,18 @@ import { ParticipantCard } from './participant-card';
 import { TileInGrid } from './tile-in-grid';
 import { VoiceSounds } from './voice-sounds';
 import { VoiceControls } from './voice-controls';
+import { WatchTheater } from './watch-theater';
+
+type VoiceRoomProps = {
+  channelId: string;
+  watchOpen: boolean;
+};
 
 function trackKey(t: TrackReferenceOrPlaceholder): string {
   return `${t.participant.sid}-${t.source}`;
 }
 
-export function VoiceRoom() {
+export function VoiceRoom({ channelId, watchOpen }: VoiceRoomProps) {
   const tracks = useTracks(
     [
       { source: Track.Source.Camera, withPlaceholder: true },
@@ -33,7 +39,20 @@ export function VoiceRoom() {
     <div className="vc-room">
       <VoiceSounds />
 
-      {focused ? (
+      {watchOpen ? (
+        <>
+          <div className="vc-watch-area">
+            <WatchTheater channelId={channelId} />
+          </div>
+          <div className="vc-strip vc-watch-strip">
+            {tracks.map((t) => (
+              <div className="vc-strip-item" key={trackKey(t)}>
+                <ParticipantCard trackRef={t} />
+              </div>
+            ))}
+          </div>
+        </>
+      ) : focused ? (
         <div className="vc-stage-focus">
           <div className="vc-focused">
             <ParticipantCard

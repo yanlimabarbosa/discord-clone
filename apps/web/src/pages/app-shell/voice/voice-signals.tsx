@@ -8,8 +8,12 @@ type VoiceSignalsProps = {
 export function VoiceSignals({ channelId }: VoiceSignalsProps) {
   useEffect(() => {
     const socket = getSocket();
-    socket.emit('voice.join', { channelId });
+    const announce = () => socket.emit('voice.join', { channelId });
+    announce();
+    // Re-announce after a reconnect (e.g. server restart wiped presence).
+    socket.on('connect', announce);
     return () => {
+      socket.off('connect', announce);
       socket.emit('voice.leave', {});
     };
   }, [channelId]);

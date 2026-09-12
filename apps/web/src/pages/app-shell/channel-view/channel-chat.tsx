@@ -58,8 +58,22 @@ export function ChannelChat({ channelId, channelName }: ChannelChatProps) {
     stopTimerRef.current = window.setTimeout(stopTyping, TYPING_STOP_DELAY);
   }
 
-  function handleSend(content: string) {
-    sendMessage.mutate({ content, replyToId: replyingTo?.id });
+  function handleSend(
+    content: string,
+    attachments: { url: string; type: string }[],
+  ) {
+    if (attachments.length === 0) {
+      sendMessage.mutate({ content, replyToId: replyingTo?.id });
+    } else {
+      attachments.forEach((a, i) =>
+        sendMessage.mutate({
+          content: i === 0 ? content : '',
+          replyToId: i === 0 ? replyingTo?.id : undefined,
+          attachmentUrl: a.url,
+          attachmentType: a.type,
+        }),
+      );
+    }
     setReplyingTo(null);
     stopTyping();
   }

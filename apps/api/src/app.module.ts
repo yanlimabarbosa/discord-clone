@@ -12,6 +12,12 @@ import { MembersModule } from './members/members.module';
 import { UsersModule } from './users/users.module';
 import { FriendsModule } from './friends/friends.module';
 import { DmsModule } from './dms/dms.module';
+import { ReadStatesModule } from './read-states/read-states.module';
+import { PermissionsModule } from './permissions/permissions.module';
+import { RolesModule } from './roles/roles.module';
+import { VoiceModerationModule } from './voice-moderation/voice-moderation.module';
+import { UploadsModule } from './uploads/uploads.module';
+import { WatchModule } from './watch/watch.module';
 import { GatewayModule } from './gateway/gateway.module';
 
 @Module({
@@ -29,6 +35,12 @@ import { GatewayModule } from './gateway/gateway.module';
     UsersModule,
     FriendsModule,
     DmsModule,
+    ReadStatesModule,
+    PermissionsModule,
+    RolesModule,
+    VoiceModerationModule,
+    UploadsModule,
+    WatchModule,
   ],
   controllers: [HealthController],
 })

@@ -1,17 +1,25 @@
 import { useState } from 'react';
-import { Volume2, Users, MessageSquare } from 'lucide-react';
+import { Volume2, Users, MessageSquare, Tv } from 'lucide-react';
 import { VoiceRoom } from './voice-room';
 import { ChannelChat } from '../channel-view/channel-chat';
 import type { ActiveVoice } from '../use-app-shell';
 
 type VoiceStageProps = {
   voice: ActiveVoice;
+  chatOpen: boolean;
+  membersOpen: boolean;
+  onToggleChat: () => void;
   onToggleMembers: () => void;
 };
 
-export function VoiceStage({ voice, onToggleMembers }: VoiceStageProps) {
-  const [showChat, setShowChat] = useState(true);
-
+export function VoiceStage({
+  voice,
+  chatOpen,
+  membersOpen,
+  onToggleChat,
+  onToggleMembers,
+}: VoiceStageProps) {
+  const [watchOpen, setWatchOpen] = useState(false);
   return (
     <main className="content content-voice" data-lk-theme="default">
       <header className="content-header">
@@ -21,14 +29,21 @@ export function VoiceStage({ voice, onToggleMembers }: VoiceStageProps) {
         <span className="content-title">{voice.name}</span>
         <div className="content-header-actions">
           <button
-            className={`header-members-btn ${showChat ? 'header-btn-active' : ''}`}
+            className={`header-members-btn ${watchOpen ? 'header-btn-active' : ''}`}
+            title="Watch Together"
+            onClick={() => setWatchOpen((w) => !w)}
+          >
+            <Tv size={20} />
+          </button>
+          <button
+            className={`header-members-btn ${chatOpen ? 'header-btn-active' : ''}`}
             title="Toggle chat"
-            onClick={() => setShowChat((s) => !s)}
+            onClick={onToggleChat}
           >
             <MessageSquare size={20} />
           </button>
           <button
-            className="header-members-btn"
+            className={`header-members-btn ${membersOpen ? 'header-btn-active' : ''}`}
             title="Toggle member list"
             onClick={onToggleMembers}
           >
@@ -38,9 +53,9 @@ export function VoiceStage({ voice, onToggleMembers }: VoiceStageProps) {
       </header>
       <div className="voice-split-h">
         <div className="voice-video-area">
-          <VoiceRoom />
+          <VoiceRoom channelId={voice.id} watchOpen={watchOpen} />
         </div>
-        {showChat && (
+        {chatOpen && (
           <div className="voice-chat-side">
             <ChannelChat channelId={voice.id} channelName={voice.name} />
           </div>

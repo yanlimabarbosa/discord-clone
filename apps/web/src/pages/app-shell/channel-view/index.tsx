@@ -1,13 +1,28 @@
+import { useEffect } from 'react';
 import { Hash, Users } from 'lucide-react';
 import type { Channel } from '../../../types/server';
 import { ChannelChat } from './channel-chat';
+import { useMessages } from '../../../hooks/messages/use-messages';
+import { useMarkRead } from '../../../hooks/unread/use-mark-read';
 
 type ChannelViewProps = {
   channel: Channel;
+  membersOpen: boolean;
   onToggleMembers: () => void;
 };
 
-export function ChannelView({ channel, onToggleMembers }: ChannelViewProps) {
+export function ChannelView({
+  channel,
+  membersOpen,
+  onToggleMembers,
+}: ChannelViewProps) {
+  const markRead = useMarkRead();
+  const { data: messages } = useMessages(channel.id);
+
+  useEffect(() => {
+    markRead(channel.serverId, channel.id);
+  }, [channel.id, channel.serverId, messages?.length, markRead]);
+
   return (
     <main className="content">
       <header className="content-header">
@@ -16,7 +31,7 @@ export function ChannelView({ channel, onToggleMembers }: ChannelViewProps) {
         </span>
         <span className="content-title">{channel.name}</span>
         <button
-          className="header-members-btn"
+          className={`header-members-btn ${membersOpen ? 'header-btn-active' : ''}`}
           title="Toggle member list"
           onClick={onToggleMembers}
         >

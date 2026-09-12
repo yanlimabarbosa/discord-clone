@@ -25,6 +25,8 @@ export function useAppShell() {
   const [pickedServerId, setPickedServerId] = useState<string | null>(null);
   const [pickedChannelId, setPickedChannelId] = useState<string | null>(null);
   const [voice, setVoice] = useState<ActiveVoice | null>(null);
+  const [homeActive, setHomeActive] = useState(true);
+  const [pendingDmUserId, setPendingDmUserId] = useState<string | null>(null);
 
   const activeServerId = pickedServerId ?? servers?.[0]?.id ?? null;
   const { data: channels } = useChannels(activeServerId);
@@ -48,11 +50,21 @@ export function useAppShell() {
     firstTextChannelId: firstTextChannel(channels)?.id ?? null,
     voice,
     voiceToken: voiceTokenData?.token ?? null,
+    homeActive,
+    pendingDmUserId,
+    goHome: () => setHomeActive(true),
+    openDmWith: (userId: string) => {
+      setHomeActive(true);
+      setPendingDmUserId(userId);
+    },
+    consumePendingDm: () => setPendingDmUserId(null),
     selectServer: (id: string) => {
+      setHomeActive(false);
       setPickedServerId(id);
       setPickedChannelId(null);
     },
     selectChannel: (channel: Channel) => {
+      setHomeActive(false);
       setPickedChannelId(channel.id);
       if (channel.type === 'VOICE') {
         setVoice({
@@ -65,8 +77,15 @@ export function useAppShell() {
     },
     viewVoice: () => {
       if (!voice) return;
+      setHomeActive(false);
       setPickedServerId(voice.serverId);
       setPickedChannelId(voice.id);
+    },
+    moveToVoice: (next: ActiveVoice) => {
+      setHomeActive(false);
+      setVoice(next);
+      setPickedServerId(next.serverId);
+      setPickedChannelId(next.id);
     },
     leaveVoice: () => setVoice(null),
   };

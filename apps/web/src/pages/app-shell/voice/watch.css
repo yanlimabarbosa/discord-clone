@@ -1,0 +1,320 @@
+.watch {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  gap: 10px;
+  padding: 10px;
+}
+
+.watch-main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.watch-player {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  background: #000;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid var(--line-soft);
+}
+.watch-yt {
+  position: absolute;
+  inset: 0;
+}
+.watch-yt iframe {
+  width: 100%;
+  height: 100%;
+}
+
+.watch-idle {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  color: var(--text-faint);
+  background: radial-gradient(70% 70% at 50% 35%, rgba(111, 123, 247, 0.12), transparent 70%), #0d0f15;
+  pointer-events: none;
+}
+.watch-idle-logo {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: linear-gradient(150deg, var(--blurple), var(--blurple-hover));
+  color: #fff;
+  font-size: 26px;
+  box-shadow: 0 8px 24px rgba(74, 84, 214, 0.5);
+}
+
+.watch-sync {
+  position: absolute;
+  left: 50%;
+  bottom: 16px;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  border: none;
+  border-radius: 24px;
+  background: linear-gradient(150deg, var(--blurple), var(--blurple-hover));
+  color: #fff;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+}
+
+.watch-controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 4px 4px 0;
+}
+.watch-cbtn {
+  width: 40px;
+  height: 40px;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--line-soft);
+  border-radius: 11px;
+  background: var(--raised);
+  color: var(--text-hi);
+  cursor: pointer;
+  transition: background 0.12s ease;
+}
+.watch-cbtn:hover:not(:disabled) {
+  background: var(--raised-hi);
+}
+.watch-cbtn:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+.watch-cbtn.primary {
+  background: linear-gradient(150deg, var(--blurple), var(--blurple-hover));
+  border-color: transparent;
+  box-shadow: 0 6px 16px rgba(74, 84, 214, 0.45);
+}
+.watch-now {
+  flex: 1;
+  min-width: 0;
+}
+.watch-now-title {
+  color: var(--text-hi);
+  font-weight: 600;
+  font-size: 14px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.watch-seek {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 5px;
+}
+.watch-bar {
+  flex: 1;
+  height: 6px;
+  border-radius: 3px;
+  background: var(--raised-hi);
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+}
+.watch-fill {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  background: linear-gradient(90deg, var(--blurple), var(--iris-bright));
+}
+.watch-time {
+  font-size: 11px;
+  color: var(--text-faint);
+  font-variant-numeric: tabular-nums;
+  min-width: 84px;
+  text-align: right;
+}
+.watch-loading {
+  font-size: 12px;
+  color: var(--text-faint);
+}
+
+.watch-side {
+  width: 250px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  background: var(--sunken);
+  border: 1px solid var(--line-soft);
+  border-radius: 12px;
+  overflow: hidden;
+}
+.watch-search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--line-soft);
+}
+.watch-search-ic {
+  color: var(--text-faint);
+  flex-shrink: 0;
+}
+.watch-search input {
+  flex: 1;
+  min-width: 0;
+  background: none;
+  border: none;
+  outline: none;
+  color: var(--text-hi);
+  font-size: 14px;
+}
+.watch-search-clear {
+  border: none;
+  background: none;
+  color: var(--text-faint);
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+}
+.watch-search-clear:hover {
+  color: var(--text-hi);
+}
+.watch-side-body {
+  flex: 1;
+  overflow-y: auto;
+  padding-bottom: 8px;
+}
+.watch-section {
+  padding: 12px 12px 4px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+}
+.watch-section.spread {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.watch-hint {
+  padding: 8px 12px;
+  color: var(--text-faint);
+  font-size: 13px;
+}
+.watch-now-card {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 8px;
+  padding: 8px;
+  border-radius: 10px;
+  background: rgba(111, 123, 247, 0.10);
+  border: 1px solid var(--line-soft);
+}
+.watch-row-meta {
+  flex: 1;
+  min-width: 0;
+}
+.watch-row-ch {
+  font-size: 11px;
+  color: var(--text-faint);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.watch-thumb.lg {
+  width: 72px;
+  height: 44px;
+}
+.watch-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 6px 10px;
+  border: none;
+  background: none;
+  color: var(--text);
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.12s ease;
+}
+.watch-row:hover {
+  background: var(--raised);
+}
+.watch-thumb {
+  width: 56px;
+  height: 34px;
+  border-radius: 5px;
+  object-fit: cover;
+  background: #000;
+  flex-shrink: 0;
+}
+.watch-row-title {
+  flex: 1;
+  min-width: 0;
+  font-size: 13px;
+  color: var(--text-hi);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  border: none;
+  background: none;
+  text-align: left;
+  cursor: pointer;
+}
+.watch-row-add {
+  color: var(--text-faint);
+  flex-shrink: 0;
+}
+.watch-qhead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 12px 4px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+}
+.watch-clear,
+.watch-qremove {
+  border: none;
+  background: none;
+  color: var(--text-faint);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+}
+.watch-clear:hover,
+.watch-qremove:hover {
+  color: var(--danger);
+}
+.watch-queue {
+  flex: 1;
+  overflow-y: auto;
+}
+.watch-qrow {
+  cursor: default;
+}
+.watch-empty {
+  color: var(--text-faint);
+  font-size: 13px;
+  text-align: center;
+  padding: 14px;
+}

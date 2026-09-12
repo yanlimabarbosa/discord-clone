@@ -3,6 +3,7 @@ export type ChannelType = 'TEXT' | 'VOICE';
 export type Channel = {
   id: string;
   serverId: string;
+  categoryId: string | null;
   name: string;
   icon: string | null;
   type: ChannelType;

@@ -11,6 +11,13 @@ import { Server, Socket } from 'socket.io';
 import * as cookie from 'cookie';
 import { AuthService } from '../auth/auth.service';
 import { SESSION_COOKIE } from '../auth/jwt-cookie.guard';
+import {
+  applyWatchAction,
+  emptyWatchState,
+  liveWatchState,
+  WatchAction,
+  WatchState,
+} from './watch-state';
 
 export type Presence = { online: boolean; voiceChannelId: string | null };
 
@@ -22,6 +29,7 @@ export class ChatGateway
 
   private onlineCounts = new Map<string, number>();
   private voiceByUser = new Map<string, string>();
+  private watchByChannel = new Map<string, WatchState>();
 
   constructor(private readonly auth: AuthService) {}
 
@@ -72,6 +80,22 @@ export class ChatGateway
     if (b?.conversationId) c.leave(`dm:${b.conversationId}`);
   }
 
+  @SubscribeMessage('server.join')
+  onServerJoin(
+    @ConnectedSocket() c: Socket,
+    @MessageBody() b: { serverId: string },
+  ) {
+    if (b?.serverId) c.join(`server:${b.serverId}`);
+  }
+
+  @SubscribeMessage('server.leave')
+  onServerLeave(
+    @ConnectedSocket() c: Socket,
+    @MessageBody() b: { serverId: string },
+  ) {
+    if (b?.serverId) c.leave(`server:${b.serverId}`);
+  }
+
   @SubscribeMessage('voice.join')
   onVoiceJoin(
     @ConnectedSocket() c: Socket,
@@ -108,6 +132,70 @@ export class ChatGateway
     });
   }
 
+  @SubscribeMessage('voice.mute')
+  onMute(@ConnectedSocket() c: Socket, @MessageBody() b: { muted: boolean }) {
+    const user = c.data.user;
+    if (!user) return;
+    this.server.emit('voice.mute', { userId: user.id, muted: !!b?.muted });
+  }
+
+  @SubscribeMessage('voice.deafen')
+  onDeafen(
+    @ConnectedSocket() c: Socket,
+    @MessageBody() b: { deafened: boolean },
+  ) {
+    const user = c.data.user;
+    if (!user) return;
+    this.server.emit('voice.deafen', {
+      userId: user.id,
+      deafened: !!b?.deafened,
+    });
+  }
+
+  @SubscribeMessage('watch.join')
+  onWatchJoin(
+    @ConnectedSocket() c: Socket,
+    @MessageBody() b: { channelId: string },
+  ) {
+    if (!b?.channelId) return;
+    c.join(`watch:${b.channelId}`);
+    const state = this.watchByChannel.get(b.channelId) ?? emptyWatchState();
+    c.emit('watch.state', {
+      channelId: b.channelId,
+      state: liveWatchState(state, Date.now()),
+    });
+  }
+
+  @SubscribeMessage('watch.leave')
+  onWatchLeave(
+    @ConnectedSocket() c: Socket,
+    @MessageBody() b: { channelId: string },
+  ) {
+    if (b?.channelId) c.leave(`watch:${b.channelId}`);
+  }
+
+  @SubscribeMessage('watch.control')
+  onWatchControl(
+    @ConnectedSocket() c: Socket,
+    @MessageBody() b: { channelId: string; action: WatchAction },
+  ) {
+    if (!c.data.user || !b?.channelId || !b.action) return;
+    const now = Date.now();
+    const prev = this.watchByChannel.get(b.channelId) ?? emptyWatchState();
+    // Debounce auto-advance so N clients firing "ended" don't skip N tracks.
+    if (
+      (b.action.type === 'ended' || b.action.type === 'next') &&
+      now - prev.updatedAtMs < 1200
+    ) {
+      return;
+    }
+    const next = applyWatchAction(prev, b.action, now);
+    this.watchByChannel.set(b.channelId, next);
+    this.server
+      .to(`watch:${b.channelId}`)
+      .emit('watch.state', { channelId: b.channelId, state: next });
+  }
+
   @SubscribeMessage('typing.start')
   onTypingStart(@ConnectedSocket() c: Socket, @MessageBody() b: { channelId: string }) {
     this.emitTyping(c, b?.channelId, true);
@@ -132,6 +220,37 @@ export class ChatGateway
 
   broadcastDm(conversationId: string, message: unknown) {
     this.server.to(`dm:${conversationId}`).emit('dm.new', message);
+  }
+
+  emitVoiceMoved(payload: {
+    userId: string;
+    channelId: string;
+    serverId: string;
+    channelName: string;
+    serverName: string;
+  }) {
+    this.server.emit('voice.moved', payload);
+  }
+
+  emitForceMute(userId: string, muted: boolean) {
+    this.server.emit('voice.forceMute', { userId, muted });
+  }
+
+  emitForceDeafen(userId: string, deafened: boolean) {
+    this.server.emit('voice.forceDeafen', { userId, deafened });
+  }
+
+  broadcastChannelActivity(
+    serverId: string,
+    payload: {
+      channelId: string;
+      serverId: string;
+      authorId: string;
+      mentionsEveryone: boolean;
+      mentionedUserIds: string[];
+    },
+  ) {
+    this.server.to(`server:${serverId}`).emit('channel.activity', payload);
   }
 
   getPresence(userId: string): Presence {

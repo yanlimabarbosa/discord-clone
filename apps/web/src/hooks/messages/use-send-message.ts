@@ -7,13 +7,22 @@ export function useSendMessage(channelId: string | null) {
     mutationFn: ({
       content,
       replyToId,
+      attachmentUrl,
+      attachmentType,
     }: {
       content: string;
       replyToId?: string;
+      attachmentUrl?: string;
+      attachmentType?: string;
     }) =>
       apiFetch<Message>(`/channels/${channelId}/messages`, {
         method: 'POST',
-        body: JSON.stringify({ content, replyToId }),
+        body: JSON.stringify({
+          content,
+          replyToId,
+          attachmentUrl,
+          attachmentType,
+        }),
       }),
   });
 }
