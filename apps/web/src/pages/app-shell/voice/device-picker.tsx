@@ -1,6 +1,12 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useSyncExternalStore } from 'react';
 import { Settings } from 'lucide-react';
 import { useRoomContext } from '@livekit/components-react';
+import { screenQualityStore } from '../../../lib/screen-quality-store';
+import {
+  RESOLUTIONS,
+  FPS_OPTIONS,
+  type ScreenResolution,
+} from '../../../lib/screen-quality';
 
 export function DevicePicker() {
   const room = useRoomContext();
@@ -9,6 +15,11 @@ export function DevicePicker() {
   const [activeMic, setActiveMic] = useState('');
   const [activeCam, setActiveCam] = useState('');
   const ref = useRef<HTMLDivElement>(null);
+  const quality = useSyncExternalStore(
+    screenQualityStore.subscribe,
+    screenQualityStore.getSnapshot,
+  );
+  const isSharing = room.localParticipant.isScreenShareEnabled;
 
   useEffect(() => {
     if (!open) return;
@@ -80,6 +91,39 @@ export function DevicePicker() {
               {d.deviceId === activeCam && <span>✓</span>}
             </button>
           ))}
+
+          <div className="vc-device-group">Screen share quality</div>
+          <div className="vc-quality-row">
+            {RESOLUTIONS.map((r) => (
+              <button
+                key={r.key}
+                className={`vc-quality-chip ${quality.resolution === r.key ? 'vc-quality-on' : ''}`}
+                aria-pressed={quality.resolution === r.key}
+                onClick={() =>
+                  screenQualityStore.set({ ...quality, resolution: r.key as ScreenResolution })
+                }
+              >
+                {r.label}
+              </button>
+            ))}
+          </div>
+          <div className="vc-quality-row">
+            {FPS_OPTIONS.map((f) => (
+              <button
+                key={f}
+                className={`vc-quality-chip ${quality.fps === f ? 'vc-quality-on' : ''}`}
+                aria-pressed={quality.fps === f}
+                onClick={() => screenQualityStore.set({ ...quality, fps: f })}
+              >
+                {f} fps
+              </button>
+            ))}
+          </div>
+          {isSharing && (
+            <div className="vc-quality-hint">
+              Applies next time you start sharing
+            </div>
+          )}
         </div>
       )}
     </div>

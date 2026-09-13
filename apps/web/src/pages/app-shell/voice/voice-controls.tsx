@@ -14,6 +14,8 @@ import {
 import { useDeafen } from '../../../hooks/voice/use-deafen';
 import { usePushToTalk } from '../../../hooks/voice/use-push-to-talk';
 import { useVoiceForce } from '../../../hooks/voice/use-voice-force';
+import { screenQualityStore } from '../../../lib/screen-quality-store';
+import { screenShareOptions } from '../../../lib/screen-quality';
 import { DevicePicker } from './device-picker';
 import './voice-controls.css';
 
@@ -59,6 +61,17 @@ export function VoiceControls() {
       return;
     }
     localParticipant.setMicrophoneEnabled(!isMicrophoneEnabled);
+  }
+
+  function toggleScreenShare() {
+    if (isScreenShareEnabled) {
+      localParticipant.setScreenShareEnabled(false);
+      return;
+    }
+    const { capture, publish } = screenShareOptions(
+      screenQualityStore.getSnapshot(),
+    );
+    localParticipant.setScreenShareEnabled(true, capture, publish);
   }
 
   const micOn = isMicrophoneEnabled && !deafened && !force.muted;
@@ -110,13 +123,7 @@ export function VoiceControls() {
         title={isScreenShareEnabled ? 'Stop sharing' : 'Share screen (with audio)'}
         aria-label={isScreenShareEnabled ? 'Stop screen share' : 'Share screen with audio'}
         aria-pressed={isScreenShareEnabled}
-        onClick={() =>
-          localParticipant.setScreenShareEnabled(!isScreenShareEnabled, {
-            audio: true,
-            contentHint: 'motion',
-            resolution: { width: 1920, height: 1080, frameRate: 60 },
-          })
-        }
+        onClick={toggleScreenShare}
       >
         {isScreenShareEnabled ? (
           <ScreenShareOff size={20} />
