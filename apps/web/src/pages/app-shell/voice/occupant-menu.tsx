@@ -1,6 +1,7 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { MicOff, Mic, HeadphoneOff, Headphones, MoveRight } from 'lucide-react';
 import type { Channel } from '../../../types/server';
+import { clampMenuPosition } from '../../../lib/clamp-menu-position';
 
 type OccupantMenuProps = {
   x: number;
@@ -33,20 +34,34 @@ export function OccupantMenu({
 }: OccupantMenuProps) {
   const ref = useRef<HTMLDivElement>(null);
   const [moveOpen, setMoveOpen] = useState(false);
+  const [pos, setPos] = useState({ left: x, top: y });
+
+  // Re-clamp on mount and whenever the submenu toggles, since opening it
+  // grows the menu height and can push it past the bottom edge.
+  useLayoutEffect(() => {
+    setPos(clampMenuPosition(x, y, ref.current));
+  }, [x, y, moveOpen]);
 
   useEffect(() => {
     const onDown = (e: MouseEvent) => {
       if (ref.current && !ref.current.contains(e.target as Node)) onClose();
     };
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
     document.addEventListener('mousedown', onDown);
-    return () => document.removeEventListener('mousedown', onDown);
+    document.addEventListener('keydown', onKeyDown);
+    return () => {
+      document.removeEventListener('mousedown', onDown);
+      document.removeEventListener('keydown', onKeyDown);
+    };
   }, [onClose]);
 
   return (
     <div
       className="occupant-menu"
       ref={ref}
-      style={{ top: y, left: x }}
+      style={{ top: pos.top, left: pos.left }}
     >
       {canMute && (
         <button

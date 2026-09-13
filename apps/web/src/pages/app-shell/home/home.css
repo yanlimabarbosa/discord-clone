@@ -208,6 +208,12 @@
   padding: 8px 0;
 }
 
+.home-friends-loading {
+  color: var(--text-faint);
+  font-size: 14px;
+  padding: 8px 0;
+}
+
 .friend-row {
   display: flex;
   align-items: center;

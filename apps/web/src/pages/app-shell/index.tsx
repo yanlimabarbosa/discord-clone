@@ -1,5 +1,6 @@
 import '@livekit/components-styles';
 import { LiveKitRoom, RoomAudioRenderer } from '@livekit/components-react';
+import { VideoPresets, type RoomOptions } from 'livekit-client';
 import { useAppShell } from './use-app-shell';
 import { ShellBody } from './shell-body';
 import { VoiceSignals } from './voice/voice-signals';
@@ -8,6 +9,14 @@ import { LocalMuteRelay } from './voice/local-mute-relay';
 
 const serverUrl =
   import.meta.env.VITE_LIVEKIT_URL || `wss://${window.location.host}`;
+
+const roomOptions: RoomOptions = {
+  videoCaptureDefaults: { resolution: VideoPresets.h720.resolution },
+  publishDefaults: {
+    videoSimulcastLayers: [VideoPresets.h360, VideoPresets.h720],
+    screenShareEncoding: { maxFramerate: 60, maxBitrate: 6_000_000 },
+  },
+};
 
 export function AppShell() {
   const shell = useAppShell();
@@ -18,6 +27,7 @@ export function AppShell() {
         key={shell.voice.id}
         token={shell.voiceToken}
         serverUrl={serverUrl}
+        options={roomOptions}
         connect
         audio
         video={false}

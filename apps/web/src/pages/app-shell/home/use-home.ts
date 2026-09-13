@@ -10,13 +10,14 @@ export type HomeConversation = {
 };
 
 export function useHome() {
-  const { data: friends } = useFriends();
+  const { data: friends, isLoading: friendsLoading } = useFriends();
   const { data: dms } = useDms();
   const openDm = useOpenDm();
   const [active, setActive] = useState<HomeConversation | null>(null);
 
   return {
     friends: friends ?? { friends: [], incoming: [], outgoing: [] },
+    friendsLoading,
     dms: dms ?? [],
     active,
     openWith: async (user: PublicUser) => {

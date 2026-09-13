@@ -1,4 +1,5 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { clampMenuPosition } from '../../../lib/clamp-menu-position';
 import './voice-context-menu.css';
 
 type ParticipantContextMenuProps = {
@@ -26,6 +27,11 @@ export function ParticipantContextMenu({
   onClose,
 }: ParticipantContextMenuProps) {
   const ref = useRef<HTMLDivElement>(null);
+  const [pos, setPos] = useState({ left: x, top: y });
+
+  useLayoutEffect(() => {
+    setPos(clampMenuPosition(x, y, ref.current));
+  }, [x, y]);
 
   useEffect(() => {
     function onPointerDown(e: MouseEvent) {
@@ -48,7 +54,7 @@ export function ParticipantContextMenu({
     <div
       ref={ref}
       className="vc-ctx"
-      style={{ left: x, top: y }}
+      style={{ left: pos.left, top: pos.top }}
       onClick={(e) => e.stopPropagation()}
       onContextMenu={(e) => e.preventDefault()}
     >

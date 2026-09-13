@@ -5,6 +5,7 @@ import { MembersTab } from './members-tab';
 import { RolesTab } from './roles-tab';
 import { useMyPermissions } from '../../../hooks/roles/use-my-permissions';
 import { Permissions, hasPermission } from '../../../lib/permissions';
+import { useEscapeKey } from '../../../hooks/use-escape-key';
 import type { Server } from '../../../types/server';
 import './server-settings.css';
 
@@ -23,6 +24,7 @@ export function ServerSettingsDialog({
   onClose,
   onDeleted,
 }: ServerSettingsDialogProps) {
+  useEscapeKey(onClose);
   const { data: perms } = useMyPermissions(server.id);
   const bits = perms?.permissions ?? 0;
   const isOwner = perms?.isOwner ?? false;
@@ -38,10 +40,13 @@ export function ServerSettingsDialog({
   const active = visible.some((t) => t.key === tab) ? tab : (visible[0]?.key ?? 'members');
 
   return (
-    <div className="modal-overlay" onClick={onClose}>
+    <div className="modal-overlay" onClick={onClose} role="presentation">
       <div
         className="modal settings-modal"
         onClick={(e) => e.stopPropagation()}
+        role="dialog"
+        aria-modal="true"
+        aria-label="Server settings"
       >
         <div className="settings-header">
           <div className="settings-tabs">
@@ -55,7 +60,12 @@ export function ServerSettingsDialog({
               </button>
             ))}
           </div>
-          <button className="settings-close" onClick={onClose} title="Close">
+          <button
+            className="settings-close"
+            onClick={onClose}
+            title="Close"
+            aria-label="Close"
+          >
             <X size={20} />
           </button>
         </div>

@@ -2,6 +2,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useCreateServer } from '../../hooks/servers/use-create-server';
+import { useEscapeKey } from '../../hooks/use-escape-key';
 
 const schema = z.object({
   name: z.string().min(2, 'At least 2 characters').max(40),
@@ -14,6 +15,7 @@ type CreateServerDialogProps = {
 
 export function CreateServerDialog({ onClose }: CreateServerDialogProps) {
   const createServer = useCreateServer();
+  useEscapeKey(onClose);
   const {
     register,
     handleSubmit,
@@ -21,8 +23,14 @@ export function CreateServerDialog({ onClose }: CreateServerDialogProps) {
   } = useForm<FormData>({ resolver: zodResolver(schema) });
 
   return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div className="modal" onClick={(e) => e.stopPropagation()}>
+    <div className="modal-overlay" onClick={onClose} role="presentation">
+      <div
+        className="modal"
+        onClick={(e) => e.stopPropagation()}
+        role="dialog"
+        aria-modal="true"
+        aria-label="Create a server"
+      >
         <h2 className="modal-title">Create a server</h2>
         <p className="modal-subtitle">Give your new server a name.</p>
         <form

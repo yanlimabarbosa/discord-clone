@@ -75,6 +75,7 @@ export function ChannelSidebar({
   onLeaveVoice,
 }: ChannelSidebarProps) {
   const [creatingChannel, setCreatingChannel] = useState(false);
+  const [creatingCategory, setCreatingCategory] = useState(false);
   const [editing, setEditing] = useState<Channel | null>(null);
   const [profile, setProfile] = useState<Member | null>(null);
   const [menuOpen, setMenuOpen] = useState(false);
@@ -170,6 +171,16 @@ export function ChannelSidebar({
       <div key={channel.id}>
         <div
           className={`channel-item ${channel.id === activeChannelId ? 'channel-item-active' : ''} ${isUnread ? 'channel-item-unread' : ''} ${dragOverKey === channel.id ? 'channel-drop-active' : ''} ${draggedId === channel.id ? 'channel-dragging' : ''}`}
+          role="button"
+          tabIndex={0}
+          aria-current={channel.id === activeChannelId}
+          aria-label={`${channel.type === 'VOICE' ? 'Voice' : 'Text'} channel ${channel.name}`}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              onSelectChannel(channel);
+            }
+          }}
           draggable={canManageChannels}
           onDragStart={(e) => {
             if (!canManageChannels) return;
@@ -227,6 +238,7 @@ export function ChannelSidebar({
             <button
               className="channel-edit"
               title="Edit channel"
+              aria-label={`Edit channel ${channel.name}`}
               onClick={(e) => {
                 e.stopPropagation();
                 setEditing(channel);
@@ -318,13 +330,15 @@ export function ChannelSidebar({
                   <button
                     className="channel-add"
                     title="Create category"
-                    onClick={() => createCategory.mutate('New Category')}
+                    aria-label="Create category"
+                    onClick={() => setCreatingCategory(true)}
                   >
                     <FolderPlus size={16} />
                   </button>
                   <button
                     className="channel-add"
                     title="Create channel"
+                    aria-label="Create channel"
                     onClick={() => setCreatingChannel(true)}
                   >
                     <Plus size={16} />
@@ -332,6 +346,27 @@ export function ChannelSidebar({
                 </div>
               )}
             </div>
+
+            {creatingCategory && (
+              <input
+                className="channel-inline-input"
+                autoFocus
+                placeholder="Category name — Enter to create"
+                aria-label="New category name"
+                onBlur={() => setCreatingCategory(false)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Escape') {
+                    setCreatingCategory(false);
+                    return;
+                  }
+                  if (e.key === 'Enter') {
+                    const name = e.currentTarget.value.trim();
+                    if (name) createCategory.mutate(name);
+                    setCreatingCategory(false);
+                  }
+                }}
+              />
+            )}
 
             <div
               className={`channel-drop-zone ${dragOverKey === 'uncat' ? 'channel-drop-active' : ''}`}
@@ -393,6 +428,7 @@ export function ChannelSidebar({
           type="button"
           className="avatar-upload-btn"
           title="Change avatar"
+          aria-label="Change avatar"
           onClick={() => fileInputRef.current?.click()}
           disabled={uploadAvatar.isPending}
         >
@@ -415,7 +451,12 @@ export function ChannelSidebar({
             {user?.isGuest ? 'Guest' : (user?.username ?? 'Member')}
           </span>
         </div>
-        <button className="icon-btn" title="Log out" onClick={onLogout}>
+        <button
+          className="icon-btn"
+          title="Log out"
+          aria-label="Log out"
+          onClick={onLogout}
+        >
           <LogOut size={16} />
         </button>
       </div>

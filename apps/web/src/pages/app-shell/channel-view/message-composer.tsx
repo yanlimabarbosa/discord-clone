@@ -5,7 +5,7 @@ import {
   type ClipboardEvent,
   type KeyboardEvent,
 } from 'react';
-import { ImagePlus } from 'lucide-react';
+import { ImagePlus, SendHorizontal, LoaderCircle } from 'lucide-react';
 import { AttachmentTray } from '../../../components/attachment-tray';
 import {
   imageFilesFromClipboard,
@@ -15,18 +15,23 @@ import type { UploadedAttachment } from '../../../hooks/uploads/use-upload-attac
 
 type MessageComposerProps = {
   channelName: string;
+  sending?: boolean;
   onSend: (content: string, attachments: UploadedAttachment[]) => void;
   onTyping?: () => void;
 };
 
 export function MessageComposer({
   channelName,
+  sending = false,
   onSend,
   onTyping,
 }: MessageComposerProps) {
   const [draft, setDraft] = useState('');
   const attach = useComposerAttachments();
   const fileRef = useRef<HTMLInputElement>(null);
+
+  const canSend =
+    (draft.trim().length > 0 || attach.ready.length > 0) && !attach.anyUploading;
 
   function submit() {
     const content = draft.trim();
@@ -68,6 +73,7 @@ export function MessageComposer({
           type="button"
           className="composer-attach"
           title="Attach image"
+          aria-label="Attach image"
           onClick={() => fileRef.current?.click()}
         >
           <ImagePlus size={20} />
@@ -92,6 +98,20 @@ export function MessageComposer({
           onKeyDown={onKeyDown}
           onPaste={onPaste}
         />
+        <button
+          type="button"
+          className="composer-send"
+          title="Send message"
+          aria-label="Send message"
+          disabled={!canSend}
+          onClick={submit}
+        >
+          {sending ? (
+            <LoaderCircle size={20} className="composer-spin" />
+          ) : (
+            <SendHorizontal size={20} />
+          )}
+        </button>
       </div>
     </div>
   );

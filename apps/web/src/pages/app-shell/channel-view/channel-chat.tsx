@@ -17,7 +17,7 @@ type ChannelChatProps = {
 const TYPING_STOP_DELAY = 2500;
 
 export function ChannelChat({ channelId, channelName }: ChannelChatProps) {
-  const { data: messages } = useMessages(channelId);
+  const { data: messages, isLoading } = useMessages(channelId);
   const sendMessage = useSendMessage(channelId);
   useChannelRealtime(channelId);
 
@@ -82,6 +82,7 @@ export function ChannelChat({ channelId, channelName }: ChannelChatProps) {
     <>
       <MessageList
         messages={messages ?? []}
+        loading={isLoading}
         channelName={channelName}
         channelId={channelId}
         onReply={setReplyingTo}
@@ -106,6 +107,7 @@ export function ChannelChat({ channelId, channelName }: ChannelChatProps) {
       )}
       <MessageComposer
         channelName={channelName}
+        sending={sendMessage.isPending}
         onSend={handleSend}
         onTyping={handleTyping}
       />

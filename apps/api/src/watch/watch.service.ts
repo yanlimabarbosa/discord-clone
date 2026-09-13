@@ -11,6 +11,23 @@ export type WatchSearchResult = {
 export class WatchService {
   private readonly logger = new Logger('WatchService');
 
+  async resolveTitle(id: string): Promise<{ title: string }> {
+    const clean = id.trim();
+    if (!/^[\w-]{11}$/.test(clean)) return { title: '' };
+    try {
+      const url =
+        `https://www.youtube.com/oembed?url=` +
+        `${encodeURIComponent(`https://www.youtube.com/watch?v=${clean}`)}&format=json`;
+      const res = await fetch(url);
+      if (!res.ok) throw new Error(`oembed ${res.status}`);
+      const json = (await res.json()) as { title?: string };
+      return { title: json.title ? decodeEntities(json.title) : '' };
+    } catch (err) {
+      this.logger.warn(`title resolve failed: ${(err as Error).message}`);
+      return { title: '' };
+    }
+  }
+
   async search(query: string): Promise<WatchSearchResult[]> {
     const q = query.trim();
     if (!q) return [];

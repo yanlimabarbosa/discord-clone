@@ -1,5 +1,6 @@
 import { usePublicServers } from '../../hooks/servers/use-public-servers';
 import { useJoinServer } from '../../hooks/servers/use-join-server';
+import { useEscapeKey } from '../../hooks/use-escape-key';
 
 type ExploreDialogProps = {
   onClose: () => void;
@@ -9,6 +10,7 @@ type ExploreDialogProps = {
 export function ExploreDialog({ onClose, onJoined }: ExploreDialogProps) {
   const { data: servers, isLoading } = usePublicServers(true);
   const joinServer = useJoinServer();
+  useEscapeKey(onClose);
 
   async function join(id: string) {
     await joinServer.mutateAsync(id);
@@ -17,8 +19,14 @@ export function ExploreDialog({ onClose, onJoined }: ExploreDialogProps) {
   }
 
   return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div className="modal explore-modal" onClick={(e) => e.stopPropagation()}>
+    <div className="modal-overlay" onClick={onClose} role="presentation">
+      <div
+        className="modal explore-modal"
+        onClick={(e) => e.stopPropagation()}
+        role="dialog"
+        aria-modal="true"
+        aria-label="Explore public servers"
+      >
         <h2 className="modal-title">Explore public servers</h2>
         <p className="modal-subtitle">Jump into any public server — no invite needed.</p>
 

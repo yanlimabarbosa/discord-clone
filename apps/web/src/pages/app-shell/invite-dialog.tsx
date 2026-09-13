@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useCreateInvite } from '../../hooks/invites/use-create-invite';
 import { useUpdateServerPrivacy } from '../../hooks/servers/use-update-server-privacy';
+import { useEscapeKey } from '../../hooks/use-escape-key';
 import type { Server } from '../../types/server';
 
 type InviteDialogProps = {
@@ -13,6 +14,7 @@ export function InviteDialog({ server, isOwner, onClose }: InviteDialogProps) {
   const createInvite = useCreateInvite(server.id);
   const updatePrivacy = useUpdateServerPrivacy(server.id);
   const [copied, setCopied] = useState(false);
+  useEscapeKey(onClose);
   const { mutate } = createInvite;
 
   useEffect(() => {
@@ -29,8 +31,14 @@ export function InviteDialog({ server, isOwner, onClose }: InviteDialogProps) {
   }
 
   return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div className="modal" onClick={(e) => e.stopPropagation()}>
+    <div className="modal-overlay" onClick={onClose} role="presentation">
+      <div
+        className="modal"
+        onClick={(e) => e.stopPropagation()}
+        role="dialog"
+        aria-modal="true"
+        aria-label="Invite people"
+      >
         <h2 className="modal-title">Invite people</h2>
         <p className="modal-subtitle">
           Share this link. Anyone can join — even as a guest.

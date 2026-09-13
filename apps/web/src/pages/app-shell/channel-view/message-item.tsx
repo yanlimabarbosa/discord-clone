@@ -61,10 +61,11 @@ export function MessageItem({ message, onReply }: MessageItemProps) {
   const [draft, setDraft] = useState(message.content);
   const pickerRef = useRef<HTMLDivElement>(null);
 
+  const [confirmDelete, setConfirmDelete] = useState(false);
   const { data: me } = useMe();
   const editMessage = useEditMessage();
   const deleteMessage = useDeleteMessage();
-  const toggleReaction = useToggleReaction();
+  const toggleReaction = useToggleReaction(message.channelId);
 
   const isMine = me?.id === message.author.id;
   const groups = groupReactions(message.reactions, me?.id);
@@ -111,14 +112,24 @@ export function MessageItem({ message, onReply }: MessageItemProps) {
     setShowPicker(false);
   }
 
+  function handleDelete() {
+    if (!confirmDelete) {
+      setConfirmDelete(true);
+      window.setTimeout(() => setConfirmDelete(false), 3000);
+      return;
+    }
+    deleteMessage.mutate(message.id);
+  }
+
   return (
-    <div className="message">
+    <div className={`message${message.pending ? ' message-pending' : ''}`}>
       <div className="message-toolbar">
         <div className="emoji-picker-wrap" ref={pickerRef}>
           <button
             type="button"
             className="message-toolbar-btn"
             title="Add reaction"
+            aria-label="Add reaction"
             onClick={() => setShowPicker((v) => !v)}
           >
             <SmilePlus size={18} />
@@ -130,6 +141,7 @@ export function MessageItem({ message, onReply }: MessageItemProps) {
                   key={emoji}
                   type="button"
                   className="emoji-picker-btn"
+                  aria-label={`React with ${emoji}`}
                   onClick={() => pickEmoji(emoji)}
                 >
                   {emoji}
@@ -142,6 +154,7 @@ export function MessageItem({ message, onReply }: MessageItemProps) {
           type="button"
           className="message-toolbar-btn"
           title="Reply"
+          aria-label="Reply to message"
           onClick={() => onReply(message)}
         >
           <Reply size={18} />
@@ -152,15 +165,17 @@ export function MessageItem({ message, onReply }: MessageItemProps) {
               type="button"
               className="message-toolbar-btn"
               title="Edit"
+              aria-label="Edit message"
               onClick={startEdit}
             >
               <Pencil size={18} />
             </button>
             <button
               type="button"
-              className="message-toolbar-btn is-danger"
-              title="Delete"
-              onClick={() => deleteMessage.mutate(message.id)}
+              className={`message-toolbar-btn is-danger${confirmDelete ? ' is-confirming' : ''}`}
+              title={confirmDelete ? 'Click again to delete' : 'Delete'}
+              aria-label={confirmDelete ? 'Confirm delete message' : 'Delete message'}
+              onClick={handleDelete}
             >
               <Trash2 size={18} />
             </button>
@@ -225,7 +240,7 @@ export function MessageItem({ message, onReply }: MessageItemProps) {
 
         {isImage && (
           <div className="message-attachment">
-            <img src={message.attachmentUrl!} alt="attachment" />
+            <img src={message.attachmentUrl!} alt="attachment" loading="lazy" />
           </div>
         )}
 
@@ -236,6 +251,8 @@ export function MessageItem({ message, onReply }: MessageItemProps) {
                 key={g.emoji}
                 type="button"
                 className={`reaction-pill${g.mine ? ' is-mine' : ''}`}
+                aria-label={`${g.emoji} reaction, ${g.count}. Toggle your reaction`}
+                aria-pressed={g.mine}
                 onClick={() =>
                   toggleReaction.mutate({ id: message.id, emoji: g.emoji })
                 }

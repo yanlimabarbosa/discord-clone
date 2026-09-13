@@ -722,6 +722,53 @@ button {
   background: var(--active);
   color: var(--text);
 }
+.composer-send {
+  flex-shrink: 0;
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  border: none;
+  border-radius: 12px;
+  background: var(--blurple);
+  color: #fff;
+  cursor: pointer;
+  transition: background 0.12s ease, opacity 0.12s ease, transform 0.08s ease;
+}
+.composer-send:hover:not(:disabled) {
+  background: var(--blurple-hover);
+}
+.composer-send:active:not(:disabled) {
+  transform: scale(0.94);
+}
+.composer-send:disabled {
+  background: var(--raised);
+  color: var(--text-faint);
+  cursor: default;
+}
+.composer-spin {
+  animation: spin 0.8s linear infinite;
+}
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+.channel-inline-input {
+  width: calc(100% - 16px);
+  margin: 4px 8px 6px;
+  padding: 7px 10px;
+  background: var(--input);
+  border: 1px solid var(--blurple-hover);
+  border-radius: 8px;
+  color: var(--text);
+  font-size: 13px;
+  outline: none;
+}
+.channel-inline-input::placeholder {
+  color: var(--text-faint);
+}
+
 .composer-input {
   width: 100%;
   resize: none;

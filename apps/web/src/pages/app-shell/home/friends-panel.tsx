@@ -10,10 +10,11 @@ type FriendsTab = 'all' | 'pending' | 'add';
 
 type FriendsPanelProps = {
   friends: FriendsData;
+  loading: boolean;
   onOpenDm: (user: PublicUser) => void;
 };
 
-export function FriendsPanel({ friends, onOpenDm }: FriendsPanelProps) {
+export function FriendsPanel({ friends, loading, onOpenDm }: FriendsPanelProps) {
   const [tab, setTab] = useState<FriendsTab>('all');
   const pendingCount = friends.incoming.length;
 
@@ -53,28 +54,34 @@ export function FriendsPanel({ friends, onOpenDm }: FriendsPanelProps) {
       <div className="home-friends-body">
         {tab === 'add' && <AddFriendForm />}
 
-        {tab === 'all' && (
-          <>
-            <div className="home-list-label">
-              All Friends — {friends.friends.length}
-            </div>
-            {friends.friends.length === 0 ? (
-              <div className="home-friends-empty">
-                No friends yet. Add someone by their username.
+        {tab === 'all' &&
+          (loading ? (
+            <div className="home-friends-loading">Loading…</div>
+          ) : (
+            <>
+              <div className="home-list-label">
+                All Friends — {friends.friends.length}
               </div>
-            ) : (
-              friends.friends.map((f) => (
-                <FriendRow
-                  key={f.friendshipId}
-                  entry={f}
-                  onMessage={() => onOpenDm(f.user)}
-                />
-              ))
-            )}
-          </>
-        )}
+              {friends.friends.length === 0 ? (
+                <div className="home-friends-empty">
+                  No friends yet. Add someone by their username.
+                </div>
+              ) : (
+                friends.friends.map((f) => (
+                  <FriendRow
+                    key={f.friendshipId}
+                    entry={f}
+                    onMessage={() => onOpenDm(f.user)}
+                  />
+                ))
+              )}
+            </>
+          ))}
 
-        {tab === 'pending' && (
+        {tab === 'pending' &&
+          (loading ? (
+            <div className="home-friends-loading">Loading…</div>
+          ) : (
           <>
             <div className="home-list-label">
               Incoming — {friends.incoming.length}
@@ -93,7 +100,7 @@ export function FriendsPanel({ friends, onOpenDm }: FriendsPanelProps) {
                 <div className="home-friends-empty">No pending requests.</div>
               )}
           </>
-        )}
+          ))}
       </div>
     </main>
   );

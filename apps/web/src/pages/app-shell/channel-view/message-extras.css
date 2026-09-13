@@ -134,6 +134,16 @@
   height: auto;
   border-radius: 8px;
   display: block;
+  background: var(--raised);
+}
+
+.message-pending {
+  opacity: 0.55;
+}
+
+.message-toolbar-btn.is-danger.is-confirming {
+  background: var(--danger);
+  color: #fff;
 }
 
 /* ---------- Reaction pills ---------- */

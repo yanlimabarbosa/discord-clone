@@ -3,6 +3,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Hash, Volume2 } from 'lucide-react';
 import { useCreateChannel } from '../../hooks/channels/use-create-channel';
+import { useEscapeKey } from '../../hooks/use-escape-key';
 
 const schema = z.object({
   name: z.string().min(1, 'Required').max(40),
@@ -20,6 +21,7 @@ export function CreateChannelDialog({
   onClose,
 }: CreateChannelDialogProps) {
   const createChannel = useCreateChannel(serverId);
+  useEscapeKey(onClose);
   const {
     register,
     handleSubmit,
@@ -30,8 +32,14 @@ export function CreateChannelDialog({
   });
 
   return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div className="modal" onClick={(e) => e.stopPropagation()}>
+    <div className="modal-overlay" onClick={onClose} role="presentation">
+      <div
+        className="modal"
+        onClick={(e) => e.stopPropagation()}
+        role="dialog"
+        aria-modal="true"
+        aria-label="Create a channel"
+      >
         <h2 className="modal-title">Create a channel</h2>
         <form
           className="auth-form"

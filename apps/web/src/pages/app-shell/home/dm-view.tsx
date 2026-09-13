@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useLayoutEffect, useRef } from 'react';
 import { Avatar } from '../../../components/avatar';
 import { useDmMessages } from '../../../hooks/dms/use-dm-messages';
 import { useDmRealtime } from '../../../hooks/dms/use-dm-realtime';
@@ -11,15 +11,26 @@ type DmViewProps = {
   currentUserId: string;
 };
 
+const NEAR_BOTTOM_PX = 120;
+
 export function DmView({ conversation, currentUserId }: DmViewProps) {
   const { data: messages, isLoading } = useDmMessages(conversation.id);
   useDmRealtime(conversation.id);
   const sendDm = useSendDm(conversation.id);
+  const listRef = useRef<HTMLDivElement>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
   const name = conversation.other?.displayName ?? 'Unknown';
 
+  useLayoutEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: 'auto' });
+  }, [conversation.id]);
+
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+    const list = listRef.current;
+    if (!list) return;
+    const nearBottom =
+      list.scrollHeight - list.scrollTop - list.clientHeight < NEAR_BOTTOM_PX;
+    if (nearBottom) bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages?.length]);
 
   return (
@@ -33,7 +44,7 @@ export function DmView({ conversation, currentUserId }: DmViewProps) {
         <span className="dm-header-name">{name}</span>
       </header>
 
-      <div className="dm-messages">
+      <div className="dm-messages" ref={listRef}>
         {isLoading && <div className="dm-loading">Loading…</div>}
         {!isLoading && messages?.length === 0 && (
           <div className="dm-intro">
@@ -75,7 +86,7 @@ export function DmView({ conversation, currentUserId }: DmViewProps) {
                     target="_blank"
                     rel="noreferrer"
                   >
-                    <img src={m.attachmentUrl} alt="attachment" />
+                    <img src={m.attachmentUrl} alt="attachment" loading="lazy" />
                   </a>
                 )}
             </div>
@@ -86,6 +97,7 @@ export function DmView({ conversation, currentUserId }: DmViewProps) {
 
       <DmComposer
         name={name}
+        sending={sendDm.isPending}
         onSend={(content, attachments) => {
           if (attachments.length === 0) {
             sendDm.mutate({ content });

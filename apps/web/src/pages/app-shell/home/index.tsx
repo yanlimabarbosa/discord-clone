@@ -37,7 +37,11 @@ export function Home({
       {home.active ? (
         <DmView conversation={home.active} currentUserId={user?.id ?? ''} />
       ) : (
-        <FriendsPanel friends={home.friends} onOpenDm={home.openWith} />
+        <FriendsPanel
+          friends={home.friends}
+          loading={home.friendsLoading}
+          onOpenDm={home.openWith}
+        />
       )}
     </>
   );

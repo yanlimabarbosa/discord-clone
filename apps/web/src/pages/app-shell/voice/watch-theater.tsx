@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Play, Pause, SkipForward, Search, Plus, Trash2 } from 'lucide-react';
 import { useWatchSession } from '../../../hooks/watch/use-watch-session';
 import { useWatchSearch } from '../../../hooks/watch/use-watch-search';
+import { resolveWatchTitle } from '../../../lib/resolve-watch-title';
 import type { WatchSearchResult } from '../../../types/watch';
 import './watch.css';
 
@@ -63,6 +64,11 @@ export function WatchTheater({ channelId }: WatchTheaterProps) {
 
   function add(v: WatchSearchResult | { id: string; title: string }) {
     controls.addVideo({ id: v.id, title: v.title });
+  }
+
+  async function addByLink(id: string) {
+    setQuery('');
+    controls.addVideo({ id, title: await resolveWatchTitle(id) });
   }
 
   return (
@@ -137,8 +143,7 @@ export function WatchTheater({ channelId }: WatchTheaterProps) {
             onChange={(e) => setQuery(e.target.value)}
             onKeyDown={(e) => {
               if (e.key === 'Enter' && parsedId) {
-                add({ id: parsedId, title: `Video ${parsedId}` });
-                setQuery('');
+                addByLink(parsedId);
               }
             }}
           />
@@ -155,7 +160,7 @@ export function WatchTheater({ channelId }: WatchTheaterProps) {
               {parsedId && (
                 <ResultRow
                   item={{ id: parsedId, title: `Add this video`, channel: parsedId, thumb: thumb(parsedId) }}
-                  onAdd={() => { add({ id: parsedId, title: `Video ${parsedId}` }); setQuery(''); }}
+                  onAdd={() => addByLink(parsedId)}
                 />
               )}
               {searchable && (

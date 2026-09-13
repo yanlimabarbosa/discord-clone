@@ -11,4 +11,9 @@ export class WatchController {
   search(@Query('q') q: string) {
     return this.watch.search(q ?? '');
   }
+
+  @Get('title')
+  title(@Query('id') id: string) {
+    return this.watch.resolveTitle(id ?? '');
+  }
 }

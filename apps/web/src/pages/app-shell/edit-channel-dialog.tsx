@@ -3,6 +3,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useUpdateChannel } from '../../hooks/channels/use-update-channel';
 import { useDeleteChannel } from '../../hooks/channels/use-delete-channel';
+import { useEscapeKey } from '../../hooks/use-escape-key';
 import type { Channel } from '../../types/server';
 
 const schema = z.object({
@@ -24,6 +25,7 @@ export function EditChannelDialog({
 }: EditChannelDialogProps) {
   const update = useUpdateChannel(serverId);
   const remove = useDeleteChannel(serverId);
+  useEscapeKey(onClose);
   const {
     register,
     handleSubmit,
@@ -34,8 +36,14 @@ export function EditChannelDialog({
   });
 
   return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div className="modal" onClick={(e) => e.stopPropagation()}>
+    <div className="modal-overlay" onClick={onClose} role="presentation">
+      <div
+        className="modal"
+        onClick={(e) => e.stopPropagation()}
+        role="dialog"
+        aria-modal="true"
+        aria-label="Edit channel"
+      >
         <h2 className="modal-title">Edit channel</h2>
         <form
           className="auth-form"

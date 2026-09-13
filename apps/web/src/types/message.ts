@@ -26,4 +26,5 @@ export type Message = {
   author: MessageAuthor;
   reactions: MessageReaction[];
   replyTo: MessageReplyTo | null;
+  pending?: boolean;
 };
