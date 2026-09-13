@@ -19,7 +19,7 @@
   background: var(--raised);
   border: 1px solid var(--divider);
   border-left: 3px solid var(--text-muted);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  box-shadow: var(--elevation-high);
   color: var(--text);
   font-size: 14px;
   pointer-events: auto;
@@ -66,6 +66,7 @@
   color: var(--text-muted);
   cursor: pointer;
   border-radius: 5px;
+  transition: background 0.12s ease, color 0.12s ease;
 }
 .toast-close:hover {
   color: var(--text);

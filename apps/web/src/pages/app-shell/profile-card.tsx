@@ -1,5 +1,7 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import { userColor } from '../../lib/user-color';
 import './profile-card.css';
+import './profile-card-extras.css';
 
 export type ProfileCardUser = {
   id: string;
@@ -23,6 +25,8 @@ export function ProfileCard({
   onMessage,
   isSelf,
 }: ProfileCardProps) {
+  const [avatarBroken, setAvatarBroken] = useState(false);
+
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose();
@@ -34,20 +38,31 @@ export function ProfileCard({
   const initial = user.displayName.charAt(0).toUpperCase();
   const secondary = user.username ?? (user.isGuest ? 'Guest' : 'Member');
   const isOnline = !!user.online;
+  const color = userColor(user.displayName);
+  const showAvatar = !!user.avatarUrl && !avatarBroken;
 
   return (
     <div className="profile-overlay" onClick={onClose}>
       <div className="profile-card" onClick={(e) => e.stopPropagation()}>
-        <div className="profile-banner" />
+        <div
+          className="profile-banner"
+          style={{
+            background: `linear-gradient(135deg, ${color}, color-mix(in srgb, ${color} 60%, #000))`,
+          }}
+        />
         <div className="profile-avatar-wrap">
-          {user.avatarUrl ? (
+          {showAvatar ? (
             <img
               className="profile-avatar profile-avatar-img"
-              src={user.avatarUrl}
+              src={user.avatarUrl ?? undefined}
               alt={user.displayName}
+              onError={() => setAvatarBroken(true)}
             />
           ) : (
-            <div className="profile-avatar profile-avatar-initial">
+            <div
+              className="profile-avatar profile-avatar-initial"
+              style={{ background: color }}
+            >
               {initial}
             </div>
           )}
@@ -66,14 +81,13 @@ export function ProfileCard({
             <span>{isOnline ? 'Online' : 'Offline'}</span>
           </div>
 
-          {!isSelf && (
+          {!isSelf && onMessage && (
             <button
               className="profile-message-btn"
               onClick={() => {
-                onMessage?.(user.id);
+                onMessage(user.id);
                 onClose();
               }}
-              disabled={!onMessage}
             >
               Message
             </button>

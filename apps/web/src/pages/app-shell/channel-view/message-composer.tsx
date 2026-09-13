@@ -5,8 +5,10 @@ import {
   type ClipboardEvent,
   type KeyboardEvent,
 } from 'react';
-import { ImagePlus, SendHorizontal, LoaderCircle } from 'lucide-react';
+import { ImagePlus, SendHorizontal, LoaderCircle, Smile } from 'lucide-react';
 import { AttachmentTray } from '../../../components/attachment-tray';
+import { EmojiPickerButton } from '../../../components/emoji-picker-button';
+import { Tooltip } from '../../../components/tooltip';
 import {
   imageFilesFromClipboard,
   useComposerAttachments,
@@ -29,6 +31,7 @@ export function MessageComposer({
   const [draft, setDraft] = useState('');
   const attach = useComposerAttachments();
   const fileRef = useRef<HTMLInputElement>(null);
+  const inputRef = useRef<HTMLTextAreaElement>(null);
 
   const canSend =
     (draft.trim().length > 0 || attach.ready.length > 0) && !attach.anyUploading;
@@ -65,19 +68,36 @@ export function MessageComposer({
     e.target.value = '';
   }
 
+  function insertEmoji(emoji: string) {
+    const el = inputRef.current;
+    if (!el) {
+      setDraft((d) => d + emoji);
+      return;
+    }
+    const start = el.selectionStart ?? draft.length;
+    const end = el.selectionEnd ?? start;
+    setDraft(draft.slice(0, start) + emoji + draft.slice(end));
+    requestAnimationFrame(() => {
+      el.focus();
+      const pos = start + emoji.length;
+      el.setSelectionRange(pos, pos);
+    });
+  }
+
   return (
     <div className="composer">
       <AttachmentTray items={attach.items} onRemove={attach.remove} />
       <div className="composer-row">
-        <button
-          type="button"
-          className="composer-attach"
-          title="Attach image"
-          aria-label="Attach image"
-          onClick={() => fileRef.current?.click()}
-        >
-          <ImagePlus size={20} />
-        </button>
+        <Tooltip label="Attach image">
+          <button
+            type="button"
+            className="composer-attach"
+            aria-label="Attach image"
+            onClick={() => fileRef.current?.click()}
+          >
+            <ImagePlus size={20} />
+          </button>
+        </Tooltip>
         <input
           ref={fileRef}
           type="file"
@@ -87,6 +107,7 @@ export function MessageComposer({
           onChange={onPickFiles}
         />
         <textarea
+          ref={inputRef}
           className="composer-input"
           rows={1}
           placeholder={`Message #${channelName}`}
@@ -98,20 +119,28 @@ export function MessageComposer({
           onKeyDown={onKeyDown}
           onPaste={onPaste}
         />
-        <button
-          type="button"
-          className="composer-send"
-          title="Send message"
-          aria-label="Send message"
-          disabled={!canSend}
-          onClick={submit}
-        >
-          {sending ? (
-            <LoaderCircle size={20} className="composer-spin" />
-          ) : (
-            <SendHorizontal size={20} />
-          )}
-        </button>
+        <EmojiPickerButton
+          label="Add emoji"
+          icon={<Smile size={20} />}
+          buttonClassName="composer-attach"
+          pickerClassName="emoji-picker-up"
+          onPick={insertEmoji}
+        />
+        <Tooltip label="Send message">
+          <button
+            type="button"
+            className="composer-send"
+            aria-label="Send message"
+            disabled={!canSend}
+            onClick={submit}
+          >
+            {sending ? (
+              <LoaderCircle size={20} className="composer-spin" />
+            ) : (
+              <SendHorizontal size={20} />
+            )}
+          </button>
+        </Tooltip>
       </div>
     </div>
   );

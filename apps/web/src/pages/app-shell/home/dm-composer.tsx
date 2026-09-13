@@ -7,6 +7,7 @@ import {
 } from 'react';
 import { ImagePlus, SendHorizontal, LoaderCircle } from 'lucide-react';
 import { AttachmentTray } from '../../../components/attachment-tray';
+import { Tooltip } from '../../../components/tooltip';
 import {
   imageFilesFromClipboard,
   useComposerAttachments,
@@ -63,15 +64,16 @@ export function DmComposer({ name, sending = false, onSend }: DmComposerProps) {
     <div className="composer">
       <AttachmentTray items={attach.items} onRemove={attach.remove} />
       <div className="composer-row">
-        <button
-          type="button"
-          className="composer-attach"
-          title="Attach image"
-          aria-label="Attach image"
-          onClick={() => fileRef.current?.click()}
-        >
-          <ImagePlus size={20} />
-        </button>
+        <Tooltip label="Attach image">
+          <button
+            type="button"
+            className="composer-attach"
+            aria-label="Attach image"
+            onClick={() => fileRef.current?.click()}
+          >
+            <ImagePlus size={20} />
+          </button>
+        </Tooltip>
         <input
           ref={fileRef}
           type="file"
@@ -89,20 +91,21 @@ export function DmComposer({ name, sending = false, onSend }: DmComposerProps) {
           onKeyDown={onKeyDown}
           onPaste={onPaste}
         />
-        <button
-          type="button"
-          className="composer-send"
-          title="Send message"
-          aria-label="Send message"
-          disabled={!canSend}
-          onClick={submit}
-        >
-          {sending ? (
-            <LoaderCircle size={20} className="composer-spin" />
-          ) : (
-            <SendHorizontal size={20} />
-          )}
-        </button>
+        <Tooltip label="Send message">
+          <button
+            type="button"
+            className="composer-send"
+            aria-label="Send message"
+            disabled={!canSend}
+            onClick={submit}
+          >
+            {sending ? (
+              <LoaderCircle size={20} className="composer-spin" />
+            ) : (
+              <SendHorizontal size={20} />
+            )}
+          </button>
+        </Tooltip>
       </div>
     </div>
   );

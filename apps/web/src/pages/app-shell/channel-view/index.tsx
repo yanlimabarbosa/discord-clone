@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { Hash, Users } from 'lucide-react';
+import { Tooltip } from '../../../components/tooltip';
 import type { Channel } from '../../../types/server';
 import { ChannelChat } from './channel-chat';
 import { useMessages } from '../../../hooks/messages/use-messages';
@@ -30,15 +31,21 @@ export function ChannelView({
           {channel.icon ? channel.icon : <Hash size={20} />}
         </span>
         <span className="content-title">{channel.name}</span>
-        <button
-          className={`header-members-btn ${membersOpen ? 'header-btn-active' : ''}`}
-          title="Toggle member list"
-          onClick={onToggleMembers}
-        >
-          <Users size={20} />
-        </button>
+        <Tooltip label="Toggle member list" side="bottom">
+          <button
+            className={`header-members-btn ${membersOpen ? 'header-btn-active' : ''}`}
+            aria-label="Toggle member list"
+            onClick={onToggleMembers}
+          >
+            <Users size={20} />
+          </button>
+        </Tooltip>
       </header>
-      <ChannelChat channelId={channel.id} channelName={channel.name} />
+      <ChannelChat
+        channelId={channel.id}
+        channelName={channel.name}
+        serverId={channel.serverId}
+      />
     </main>
   );
 }

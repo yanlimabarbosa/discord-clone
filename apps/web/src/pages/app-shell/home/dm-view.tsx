@@ -1,8 +1,13 @@
-import { useEffect, useLayoutEffect, useRef } from 'react';
+import { Fragment, useEffect, useLayoutEffect, useMemo, useRef } from 'react';
 import { Avatar } from '../../../components/avatar';
+import { MessageRow } from '../../../components/message-row';
+import { MessageDayDivider } from '../../../components/message-day-divider';
 import { useDmMessages } from '../../../hooks/dms/use-dm-messages';
 import { useDmRealtime } from '../../../hooks/dms/use-dm-realtime';
 import { useSendDm } from '../../../hooks/dms/use-send-dm';
+import { useMe } from '../../../hooks/auth/use-me';
+import { buildChatItems } from '../../../lib/chat-items';
+import { mentionsUser } from '../../../lib/message-mentions';
 import { DmComposer } from './dm-composer';
 import type { HomeConversation } from './use-home';
 
@@ -13,13 +18,25 @@ type DmViewProps = {
 
 const NEAR_BOTTOM_PX = 120;
 
-export function DmView({ conversation, currentUserId }: DmViewProps) {
+export function DmView({ conversation }: DmViewProps) {
   const { data: messages, isLoading } = useDmMessages(conversation.id);
   useDmRealtime(conversation.id);
   const sendDm = useSendDm(conversation.id);
+  const { data: me } = useMe();
   const listRef = useRef<HTMLDivElement>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
   const name = conversation.other?.displayName ?? 'Unknown';
+
+  const memberNames = useMemo(() => {
+    const names: string[] = [];
+    if (conversation.other?.displayName) {
+      names.push(conversation.other.displayName);
+    }
+    if (me?.displayName) names.push(me.displayName);
+    return names;
+  }, [conversation.other?.displayName, me?.displayName]);
+
+  const items = useMemo(() => buildChatItems(messages ?? []), [messages]);
 
   useLayoutEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'auto' });
@@ -57,40 +74,21 @@ export function DmView({ conversation, currentUserId }: DmViewProps) {
             <p>This is the beginning of your direct message history.</p>
           </div>
         )}
-        {messages?.map((m) => (
-          <div
-            key={m.id}
-            className={`dm-msg ${m.author.id === currentUserId ? 'dm-msg-own' : ''}`}
-          >
-            <Avatar
-              name={m.author.displayName}
-              avatarUrl={m.author.avatarUrl}
-              size={38}
+        {items.map(({ message, compact, dayLabel }) => (
+          <Fragment key={message.id}>
+            {dayLabel && <MessageDayDivider label={dayLabel} />}
+            <MessageRow
+              author={message.author}
+              createdAt={message.createdAt}
+              editedAt={message.editedAt}
+              content={message.content}
+              attachmentUrl={message.attachmentUrl}
+              attachmentType={message.attachmentType}
+              compact={compact}
+              mentioned={mentionsUser(message.content, me?.displayName)}
+              memberNames={memberNames}
             />
-            <div className="dm-msg-body">
-              <div className="dm-msg-head">
-                <span className="dm-msg-author">{m.author.displayName}</span>
-                <span className="dm-msg-time">
-                  {new Date(m.createdAt).toLocaleTimeString([], {
-                    hour: '2-digit',
-                    minute: '2-digit',
-                  })}
-                </span>
-              </div>
-              {m.content && <div className="dm-msg-text">{m.content}</div>}
-              {m.attachmentUrl &&
-                m.attachmentType?.startsWith('image') && (
-                  <a
-                    className="dm-msg-attachment"
-                    href={m.attachmentUrl}
-                    target="_blank"
-                    rel="noreferrer"
-                  >
-                    <img src={m.attachmentUrl} alt="attachment" loading="lazy" />
-                  </a>
-                )}
-            </div>
-          </div>
+          </Fragment>
         ))}
         <div ref={bottomRef} />
       </div>

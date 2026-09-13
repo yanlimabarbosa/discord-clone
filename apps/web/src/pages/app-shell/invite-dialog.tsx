@@ -1,7 +1,8 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useCreateInvite } from '../../hooks/invites/use-create-invite';
 import { useUpdateServerPrivacy } from '../../hooks/servers/use-update-server-privacy';
 import { useEscapeKey } from '../../hooks/use-escape-key';
+import { toastStore } from '../../lib/toast-store';
 import type { Server } from '../../types/server';
 
 type InviteDialogProps = {
@@ -14,6 +15,7 @@ export function InviteDialog({ server, isOwner, onClose }: InviteDialogProps) {
   const createInvite = useCreateInvite(server.id);
   const updatePrivacy = useUpdateServerPrivacy(server.id);
   const [copied, setCopied] = useState(false);
+  const copyTimer = useRef<number>();
   useEscapeKey(onClose);
   const { mutate } = createInvite;
 
@@ -21,13 +23,22 @@ export function InviteDialog({ server, isOwner, onClose }: InviteDialogProps) {
     mutate();
   }, [mutate]);
 
+  useEffect(() => () => window.clearTimeout(copyTimer.current), []);
+
   const link = createInvite.data
     ? `${window.location.origin}/invite/${createInvite.data.code}`
     : '';
 
-  function copy() {
-    navigator.clipboard.writeText(link);
-    setCopied(true);
+  async function copy() {
+    try {
+      await navigator.clipboard.writeText(link);
+      setCopied(true);
+      toastStore.success('Invite link copied');
+      window.clearTimeout(copyTimer.current);
+      copyTimer.current = window.setTimeout(() => setCopied(false), 2000);
+    } catch {
+      toastStore.error('Could not copy the link — copy it manually');
+    }
   }
 
   return (

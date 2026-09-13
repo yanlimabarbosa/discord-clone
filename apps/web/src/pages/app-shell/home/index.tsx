@@ -29,6 +29,7 @@ export function Home({
     <>
       <DmSidebar
         dms={home.dms}
+        loading={home.dmsLoading}
         activeId={home.active?.id ?? null}
         onSelect={home.selectConversation}
         onFriends={home.showFriends}

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Trash2 } from 'lucide-react';
 import { useUpdateRole } from '../../../hooks/roles/use-update-role';
 import { useDeleteRole } from '../../../hooks/roles/use-delete-role';
+import { toastStore } from '../../../lib/toast-store';
 import { PERMISSION_LIST, hasPermission } from '../../../lib/permissions';
 import type { Role } from '../../../types/role';
 
@@ -86,11 +87,12 @@ export function RoleEditor({ role, serverId, onDeleted }: RoleEditorProps) {
           className="btn-danger"
           onClick={async () => {
             await del.mutateAsync(role.id);
+            toastStore.success('Role deleted');
             onDeleted();
           }}
           disabled={del.isPending}
         >
-          <Trash2 size={15} /> Delete
+          <Trash2 size={15} /> {del.isPending ? 'Deleting…' : 'Delete'}
         </button>
         <button
           className="btn-primary"

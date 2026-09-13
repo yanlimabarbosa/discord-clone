@@ -1,5 +1,6 @@
 import { MessageCircle, UserMinus } from 'lucide-react';
 import { Avatar } from '../../../components/avatar';
+import { Tooltip } from '../../../components/tooltip';
 import { useRemoveFriend } from '../../../hooks/friends/use-remove-friend';
 import type { FriendEntry } from '../../../types/friend';
 
@@ -25,21 +26,25 @@ export function FriendRow({ entry, onMessage }: FriendRowProps) {
         )}
       </div>
       <div className="friend-row-actions">
-        <button
-          className="friend-icon-btn"
-          title="Message"
-          onClick={onMessage}
-        >
-          <MessageCircle size={18} />
-        </button>
-        <button
-          className="friend-icon-btn friend-icon-danger"
-          title="Remove friend"
-          onClick={() => removeFriend.mutate(entry.friendshipId)}
-          disabled={removeFriend.isPending}
-        >
-          <UserMinus size={18} />
-        </button>
+        <Tooltip label="Message">
+          <button
+            className="friend-icon-btn"
+            aria-label="Message"
+            onClick={onMessage}
+          >
+            <MessageCircle size={18} />
+          </button>
+        </Tooltip>
+        <Tooltip label="Remove friend">
+          <button
+            className="friend-icon-btn friend-icon-danger"
+            aria-label="Remove friend"
+            onClick={() => removeFriend.mutate(entry.friendshipId)}
+            disabled={removeFriend.isPending}
+          >
+            <UserMinus size={18} />
+          </button>
+        </Tooltip>
       </div>
     </div>
   );

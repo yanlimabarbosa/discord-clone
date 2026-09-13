@@ -63,6 +63,8 @@
   padding: 20px;
   max-height: 70vh;
   overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
 }
 
 .settings-title {
@@ -78,7 +80,7 @@
   font-size: 12px;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.02em;
+  letter-spacing: 0.04em;
   color: var(--text-muted);
 }
 
@@ -332,6 +334,8 @@
   padding-right: 8px;
   max-height: 52vh;
   overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
 }
 
 .roles-list-item {
@@ -381,6 +385,8 @@
   min-width: 0;
   max-height: 52vh;
   overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
   padding-right: 4px;
 }
 
@@ -396,6 +402,12 @@
   border-radius: 50%;
   border: 2px solid transparent;
   cursor: pointer;
+  transition: transform 0.12s ease, border-color 0.12s ease;
+}
+
+.role-swatch:hover {
+  transform: scale(1.12);
+  border-color: rgba(255, 255, 255, 0.4);
 }
 
 .role-swatch-active {
@@ -416,6 +428,11 @@
   padding: 10px 8px;
   border-top: 1px solid var(--divider);
   cursor: pointer;
+  transition: background 0.12s ease;
+}
+
+.role-perm-row:hover {
+  background: var(--hover-overlay);
 }
 
 .role-perm-text {
@@ -469,10 +486,13 @@
   width: 200px;
   max-height: 240px;
   overflow-y: auto;
+  overscroll-behavior: contain;
   background: var(--floating);
   border-radius: 8px;
   padding: 6px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+  box-shadow: var(--elevation-high);
+  transform-origin: top right;
+  animation: popIn 0.13s ease;
 }
 
 .member-roles-item {
@@ -482,6 +502,7 @@
   padding: 6px 8px;
   border-radius: 4px;
   cursor: pointer;
+  transition: background 0.12s ease;
 }
 
 .member-roles-item:hover {
@@ -504,7 +525,9 @@
   background: var(--floating);
   border-radius: 8px;
   padding: 6px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+  box-shadow: var(--elevation-high);
+  transform-origin: top left;
+  animation: popIn 0.13s ease;
 }
 
 .occupant-menu-item {
@@ -543,7 +566,9 @@
   background: var(--floating);
   border-radius: var(--radius);
   padding: 6px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  box-shadow: var(--elevation-high);
+  transform-origin: top center;
+  animation: popIn 0.13s ease;
 }
 
 .server-menu-item {
@@ -575,4 +600,62 @@
 .server-menu-danger:hover {
   background: var(--danger);
   color: #fff;
+}
+
+.settings-confirm-btn {
+  width: auto;
+  padding: 0 10px;
+  background: var(--danger);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.settings-confirm-btn:hover {
+  background: #d3373b;
+  color: #fff;
+}
+
+.settings-member-skeleton {
+  pointer-events: none;
+}
+
+.settings-skel {
+  border-radius: 4px;
+  background: var(--raised);
+  animation: settings-skel-pulse 1.5s ease-in-out infinite;
+}
+
+.settings-skel-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.settings-skel-line {
+  height: 12px;
+  width: 140px;
+  margin: 3px 0;
+}
+
+.settings-skel-line.short {
+  width: 80px;
+  height: 10px;
+}
+
+@keyframes settings-skel-pulse {
+  0%,
+  100% {
+    opacity: 0.4;
+  }
+  50% {
+    opacity: 0.8;
+  }
+}
+
+.settings-toggle-row:disabled {
+  opacity: 0.6;
+  cursor: progress;
 }

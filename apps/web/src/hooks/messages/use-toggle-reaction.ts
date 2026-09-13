@@ -31,9 +31,8 @@ export function useToggleReaction(channelId: string | null) {
     onError: (_err, _vars, context) => {
       if (context?.previous) qc.setQueryData(key, context.previous);
     },
-    onSettled: () => {
-      qc.invalidateQueries({ queryKey: key });
-    },
+    // No invalidation: the socket `message.update` echo patches the cache
+    // surgically, so refetching the whole channel history is wasted work.
   });
 }
 

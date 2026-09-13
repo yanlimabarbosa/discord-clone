@@ -1,6 +1,8 @@
+import { useState } from 'react';
 import { usePublicServers } from '../../hooks/servers/use-public-servers';
 import { useJoinServer } from '../../hooks/servers/use-join-server';
 import { useEscapeKey } from '../../hooks/use-escape-key';
+import { toastStore } from '../../lib/toast-store';
 
 type ExploreDialogProps = {
   onClose: () => void;
@@ -10,12 +12,19 @@ type ExploreDialogProps = {
 export function ExploreDialog({ onClose, onJoined }: ExploreDialogProps) {
   const { data: servers, isLoading } = usePublicServers(true);
   const joinServer = useJoinServer();
+  const [joiningId, setJoiningId] = useState<string | null>(null);
   useEscapeKey(onClose);
 
-  async function join(id: string) {
-    await joinServer.mutateAsync(id);
-    onJoined(id);
-    onClose();
+  async function join(id: string, name: string) {
+    setJoiningId(id);
+    try {
+      await joinServer.mutateAsync(id);
+      toastStore.success(`Joined ${name}`);
+      onJoined(id);
+      onClose();
+    } finally {
+      setJoiningId(null);
+    }
   }
 
   return (
@@ -48,10 +57,10 @@ export function ExploreDialog({ onClose, onJoined }: ExploreDialogProps) {
               </div>
               <button
                 className="btn-primary explore-join"
-                onClick={() => join(s.id)}
-                disabled={joinServer.isPending}
+                onClick={() => join(s.id, s.name)}
+                disabled={joiningId !== null}
               >
-                Join
+                {joiningId === s.id ? 'Joining…' : 'Join'}
               </button>
             </div>
           ))}

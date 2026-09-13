@@ -4,6 +4,7 @@ import { z } from 'zod';
 import { Hash, Volume2 } from 'lucide-react';
 import { useCreateChannel } from '../../hooks/channels/use-create-channel';
 import { useEscapeKey } from '../../hooks/use-escape-key';
+import { toastStore } from '../../lib/toast-store';
 
 const schema = z.object({
   name: z.string().min(1, 'Required').max(40),
@@ -45,6 +46,7 @@ export function CreateChannelDialog({
           className="auth-form"
           onSubmit={handleSubmit(async (data) => {
             await createChannel.mutateAsync(data);
+            toastStore.success('Channel created');
             onClose();
           })}
         >

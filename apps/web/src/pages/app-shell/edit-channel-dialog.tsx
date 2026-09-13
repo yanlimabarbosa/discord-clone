@@ -4,6 +4,7 @@ import { z } from 'zod';
 import { useUpdateChannel } from '../../hooks/channels/use-update-channel';
 import { useDeleteChannel } from '../../hooks/channels/use-delete-channel';
 import { useEscapeKey } from '../../hooks/use-escape-key';
+import { toastStore } from '../../lib/toast-store';
 import type { Channel } from '../../types/server';
 
 const schema = z.object({
@@ -53,6 +54,7 @@ export function EditChannelDialog({
               name: data.name,
               icon: data.icon ?? '',
             });
+            toastStore.success('Channel updated');
             onClose();
           })}
         >
@@ -71,12 +73,14 @@ export function EditChannelDialog({
             <button
               type="button"
               className="btn-danger"
+              disabled={remove.isPending}
               onClick={async () => {
                 await remove.mutateAsync(channel.id);
+                toastStore.success('Channel deleted');
                 onClose();
               }}
             >
-              Delete
+              {remove.isPending ? 'Deleting…' : 'Delete'}
             </button>
             <div className="modal-actions-right">
               <button type="button" className="btn-ghost" onClick={onClose}>

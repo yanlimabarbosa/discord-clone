@@ -1,5 +1,6 @@
 import { useState, type DragEvent, type KeyboardEvent } from 'react';
 import { ChevronRight, ChevronDown, Trash2 } from 'lucide-react';
+import { Tooltip } from '../../components/tooltip';
 import { useRenameCategory } from '../../hooks/channels/use-rename-category';
 import { useDeleteCategory } from '../../hooks/channels/use-delete-category';
 import type { ChannelCategory } from '../../types/channel-category';
@@ -87,14 +88,16 @@ export function CategoryHeader({
         )}
       </button>
       {canManage && (
-        <button
-          className="category-delete"
-          title="Delete category"
-          onClick={() => del.mutate(category.id)}
-          disabled={del.isPending}
-        >
-          <Trash2 size={13} />
-        </button>
+        <Tooltip label="Delete category">
+          <button
+            className="category-delete"
+            aria-label={`Delete category ${category.name}`}
+            onClick={() => del.mutate(category.id)}
+            disabled={del.isPending}
+          >
+            <Trash2 size={13} />
+          </button>
+        </Tooltip>
       )}
     </div>
   );

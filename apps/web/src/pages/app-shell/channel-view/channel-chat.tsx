@@ -1,8 +1,10 @@
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { X } from 'lucide-react';
 import { useMessages } from '../../../hooks/messages/use-messages';
 import { useSendMessage } from '../../../hooks/messages/use-send-message';
 import { useChannelRealtime } from '../../../hooks/realtime/use-channel-realtime';
+import { useEscapeKey } from '../../../hooks/use-escape-key';
+import { Tooltip } from '../../../components/tooltip';
 import { getSocket } from '../../../lib/socket';
 import type { Message } from '../../../types/message';
 import { MessageList } from './message-list';
@@ -12,11 +14,16 @@ import './message-extras.css';
 type ChannelChatProps = {
   channelId: string;
   channelName: string;
+  serverId?: string;
 };
 
 const TYPING_STOP_DELAY = 2500;
 
-export function ChannelChat({ channelId, channelName }: ChannelChatProps) {
+export function ChannelChat({
+  channelId,
+  channelName,
+  serverId,
+}: ChannelChatProps) {
   const { data: messages, isLoading } = useMessages(channelId);
   const sendMessage = useSendMessage(channelId);
   useChannelRealtime(channelId);
@@ -24,6 +31,8 @@ export function ChannelChat({ channelId, channelName }: ChannelChatProps) {
   const [replyingTo, setReplyingTo] = useState<Message | null>(null);
   const isTypingRef = useRef(false);
   const stopTimerRef = useRef<number | null>(null);
+
+  useEscapeKey(useCallback(() => setReplyingTo(null), []));
 
   // Reset reply state and typing when switching channels.
   useEffect(() => {
@@ -85,6 +94,7 @@ export function ChannelChat({ channelId, channelName }: ChannelChatProps) {
         loading={isLoading}
         channelName={channelName}
         channelId={channelId}
+        serverId={serverId ?? null}
         onReply={setReplyingTo}
       />
       {replyingTo && (
@@ -95,14 +105,16 @@ export function ChannelChat({ channelId, channelName }: ChannelChatProps) {
               {replyingTo.author.displayName}
             </span>
           </span>
-          <button
-            type="button"
-            className="reply-banner-close"
-            title="Cancel reply"
-            onClick={() => setReplyingTo(null)}
-          >
-            <X size={16} />
-          </button>
+          <Tooltip label="Cancel reply">
+            <button
+              type="button"
+              className="reply-banner-close"
+              aria-label="Cancel reply"
+              onClick={() => setReplyingTo(null)}
+            >
+              <X size={16} />
+            </button>
+          </Tooltip>
         </div>
       )}
       <MessageComposer

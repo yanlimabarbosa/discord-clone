@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { getSocket } from '../../lib/socket';
-import type { DmMessage } from '../../types/dm';
+import type { DmMessage, DmSummary } from '../../types/dm';
 
 export function useDmRealtime(conversationId: string | null) {
   const qc = useQueryClient();
@@ -16,7 +16,17 @@ export function useDmRealtime(conversationId: string | null) {
       qc.setQueryData<DmMessage[]>(['dm-messages', conversationId], (old = []) =>
         old.some((m) => m.id === message.id) ? old : [...old, message],
       );
-      qc.invalidateQueries({ queryKey: ['dms'] });
+      const dms = qc.getQueryData<DmSummary[]>(['dms']);
+      const summary = dms?.find((d) => d.id === message.conversationId);
+      if (summary) {
+        qc.setQueryData<DmSummary[]>(['dms'], (old = []) => [
+          { ...summary, lastMessage: message.content },
+          ...old.filter((d) => d.id !== message.conversationId),
+        ]);
+      } else {
+        // Conversation not cached yet — refetch to pick it up.
+        qc.invalidateQueries({ queryKey: ['dms'] });
+      }
     };
 
     socket.on('dm.new', onNew);

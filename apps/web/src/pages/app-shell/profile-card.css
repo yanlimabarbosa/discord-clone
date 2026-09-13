@@ -1,7 +1,9 @@
 .profile-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.6);
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -15,7 +17,7 @@
   background: var(--sidebar);
   border-radius: 12px;
   overflow: hidden;
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
+  box-shadow: var(--elevation-modal);
   transform-origin: center;
   animation: profilePop 0.24s cubic-bezier(0.16, 1, 0.3, 1);
 }

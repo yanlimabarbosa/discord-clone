@@ -3,6 +3,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useCreateServer } from '../../hooks/servers/use-create-server';
 import { useEscapeKey } from '../../hooks/use-escape-key';
+import { toastStore } from '../../lib/toast-store';
 
 const schema = z.object({
   name: z.string().min(2, 'At least 2 characters').max(40),
@@ -37,6 +38,7 @@ export function CreateServerDialog({ onClose }: CreateServerDialogProps) {
           className="auth-form"
           onSubmit={handleSubmit(async ({ name }) => {
             await createServer.mutateAsync(name);
+            toastStore.success('Server created');
             onClose();
           })}
         >

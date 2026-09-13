@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { UserPlus, Users } from 'lucide-react';
 import { AddFriendForm } from './add-friend-form';
+import { SkeletonRows } from '../skeleton-rows';
 import { FriendRow } from './friend-row';
 import { PendingRow } from './pending-row';
 import type { FriendsData } from '../../../types/friend';
@@ -56,7 +57,7 @@ export function FriendsPanel({ friends, loading, onOpenDm }: FriendsPanelProps) 
 
         {tab === 'all' &&
           (loading ? (
-            <div className="home-friends-loading">Loading…</div>
+            <SkeletonRows rows={5} avatar />
           ) : (
             <>
               <div className="home-list-label">
@@ -80,7 +81,7 @@ export function FriendsPanel({ friends, loading, onOpenDm }: FriendsPanelProps) 
 
         {tab === 'pending' &&
           (loading ? (
-            <div className="home-friends-loading">Loading…</div>
+            <SkeletonRows rows={4} avatar />
           ) : (
           <>
             <div className="home-list-label">

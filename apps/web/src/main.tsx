@@ -15,6 +15,13 @@ import { toastStore } from './lib/toast-store';
 import './styles.css';
 
 const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 30_000,
+      refetchOnWindowFocus: false,
+      retry: 1,
+    },
+  },
   mutationCache: new MutationCache({
     onError: (error) => {
       const message =

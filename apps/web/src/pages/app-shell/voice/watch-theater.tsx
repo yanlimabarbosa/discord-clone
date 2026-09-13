@@ -3,6 +3,7 @@ import { Play, Pause, SkipForward, Search, Plus, Trash2 } from 'lucide-react';
 import { useWatchSession } from '../../../hooks/watch/use-watch-session';
 import { useWatchSearch } from '../../../hooks/watch/use-watch-search';
 import { resolveWatchTitle } from '../../../lib/resolve-watch-title';
+import { Tooltip } from '../../../components/tooltip';
 import type { WatchSearchResult } from '../../../types/watch';
 import './watch.css';
 
@@ -31,13 +32,68 @@ function fmt(t: number) {
   return `${m}:${String(t % 60).padStart(2, '0')}`;
 }
 
+type WatchApi = ReturnType<typeof useWatchSession>['api'];
+
+// Owns the 2Hz tick so progress updates re-render only this bar, not the theater.
+function WatchProgress({
+  api,
+  onSeek,
+}: {
+  api: WatchApi;
+  onSeek: (position: number) => void;
+}) {
+  const [, setTick] = useState(0);
+  useEffect(() => {
+    const id = window.setInterval(() => setTick((t) => t + 1), 500);
+    return () => window.clearInterval(id);
+  }, []);
+
+  const time = api.getTime();
+  const duration = api.getDuration();
+
+  return (
+    <div className="watch-seek">
+      <div
+        className="watch-bar"
+        onClick={(e) => {
+          if (!duration) return;
+          const r = e.currentTarget.getBoundingClientRect();
+          onSeek(((e.clientX - r.left) / r.width) * duration);
+        }}
+      >
+        <div
+          className="watch-fill"
+          style={{ width: duration ? `${(time / duration) * 100}%` : 0 }}
+        />
+      </div>
+      <span className="watch-time">
+        {fmt(time)} / {fmt(duration)}
+      </span>
+    </div>
+  );
+}
+
+function Thumb({ src, large }: { src: string; large?: boolean }) {
+  const [failed, setFailed] = useState(false);
+  const cls = `watch-thumb${large ? ' lg' : ''}`;
+  if (failed) {
+    return (
+      <span className={`${cls} watch-thumb-fallback`}>
+        <Play size={14} />
+      </span>
+    );
+  }
+  return (
+    <img className={cls} src={src} alt="" onError={() => setFailed(true)} />
+  );
+}
+
 type WatchTheaterProps = { channelId: string };
 
 export function WatchTheater({ channelId }: WatchTheaterProps) {
   const { hostRef, ready, state, controls, api } = useWatchSession(channelId);
   const [query, setQuery] = useState('');
   const [debounced, setDebounced] = useState('');
-  const [, setTick] = useState(0);
   const [needsSync, setNeedsSync] = useState(false);
 
   const parsedId = parseYouTube(query);
@@ -51,15 +107,12 @@ export function WatchTheater({ channelId }: WatchTheaterProps) {
 
   useEffect(() => {
     const id = window.setInterval(() => {
-      setTick((t) => t + 1);
       setNeedsSync(state.currentIndex >= 0 && state.playing && !api.isPlaying());
     }, 500);
     return () => window.clearInterval(id);
   }, [api, state.playing, state.currentIndex]);
 
   const current = state.queue[state.currentIndex];
-  const time = api.getTime();
-  const duration = api.getDuration();
   const upNext = state.queue.slice(state.currentIndex + 1);
 
   function add(v: WatchSearchResult | { id: string; title: string }) {
@@ -91,44 +144,31 @@ export function WatchTheater({ channelId }: WatchTheaterProps) {
           )}
         </div>
         <div className="watch-controls">
-          <button
-            className="watch-cbtn primary"
-            onClick={controls.togglePlay}
-            disabled={!current}
-            title={state.playing ? 'Pause' : 'Play'}
-          >
-            {state.playing ? <Pause size={18} /> : <Play size={18} />}
-          </button>
-          <button
-            className="watch-cbtn"
-            onClick={controls.next}
-            disabled={state.currentIndex >= state.queue.length - 1}
-            title="Skip"
-          >
-            <SkipForward size={18} />
-          </button>
+          <Tooltip label={state.playing ? 'Pause' : 'Play'}>
+            <button
+              className="watch-cbtn primary"
+              onClick={controls.togglePlay}
+              disabled={!current}
+              aria-label={state.playing ? 'Pause' : 'Play'}
+            >
+              {state.playing ? <Pause size={18} /> : <Play size={18} />}
+            </button>
+          </Tooltip>
+          <Tooltip label="Skip">
+            <button
+              className="watch-cbtn"
+              onClick={controls.next}
+              disabled={state.currentIndex >= state.queue.length - 1}
+              aria-label="Skip"
+            >
+              <SkipForward size={18} />
+            </button>
+          </Tooltip>
           <div className="watch-now">
             <div className="watch-now-title">
               {current ? current.title : 'Add something to the queue'}
             </div>
-            <div className="watch-seek">
-              <div
-                className="watch-bar"
-                onClick={(e) => {
-                  if (!duration) return;
-                  const r = e.currentTarget.getBoundingClientRect();
-                  controls.seek(((e.clientX - r.left) / r.width) * duration);
-                }}
-              >
-                <div
-                  className="watch-fill"
-                  style={{ width: duration ? `${(time / duration) * 100}%` : 0 }}
-                />
-              </div>
-              <span className="watch-time">
-                {fmt(time)} / {fmt(duration)}
-              </span>
-            </div>
+            <WatchProgress api={api} onSeek={controls.seek} />
           </div>
           {!ready && <span className="watch-loading">loading…</span>}
         </div>
@@ -182,7 +222,7 @@ export function WatchTheater({ channelId }: WatchTheaterProps) {
                 <>
                   <div className="watch-section">Now Playing</div>
                   <div className="watch-now-card">
-                    <img className="watch-thumb lg" src={thumb(current.id)} alt="" />
+                    <Thumb src={thumb(current.id)} large />
                     <div className="watch-row-title">{current.title}</div>
                   </div>
                 </>
@@ -190,9 +230,15 @@ export function WatchTheater({ channelId }: WatchTheaterProps) {
               <div className="watch-section spread">
                 <span>Up Next — {upNext.length}</span>
                 {state.queue.length > 0 && (
-                  <button className="watch-clear" onClick={controls.clear} title="Clear queue">
-                    <Trash2 size={13} />
-                  </button>
+                  <Tooltip label="Clear queue">
+                    <button
+                      className="watch-clear"
+                      onClick={controls.clear}
+                      aria-label="Clear queue"
+                    >
+                      <Trash2 size={13} />
+                    </button>
+                  </Tooltip>
                 )}
               </div>
               {upNext.length === 0 ? (
@@ -202,13 +248,19 @@ export function WatchTheater({ channelId }: WatchTheaterProps) {
                   const idx = state.currentIndex + 1 + i;
                   return (
                     <div className="watch-row watch-qrow" key={`${item.id}-${idx}`}>
-                      <img className="watch-thumb" src={thumb(item.id)} alt="" />
+                      <Thumb src={thumb(item.id)} />
                       <button className="watch-row-title watch-qplay" onClick={() => controls.playAt(idx)}>
                         {item.title}
                       </button>
-                      <button className="watch-qremove" onClick={() => controls.remove(idx)} title="Remove">
-                        <Trash2 size={13} />
-                      </button>
+                      <Tooltip label="Remove">
+                        <button
+                          className="watch-qremove"
+                          onClick={() => controls.remove(idx)}
+                          aria-label="Remove from queue"
+                        >
+                          <Trash2 size={13} />
+                        </button>
+                      </Tooltip>
                     </div>
                   );
                 })
@@ -238,7 +290,7 @@ function ResultRow({
 }) {
   return (
     <button className="watch-row" onClick={onAdd}>
-      <img className="watch-thumb" src={item.thumb} alt="" />
+      <Thumb src={item.thumb} />
       <div className="watch-row-meta">
         <div className="watch-row-title">{item.title}</div>
         {item.channel && <div className="watch-row-ch">{item.channel}</div>}

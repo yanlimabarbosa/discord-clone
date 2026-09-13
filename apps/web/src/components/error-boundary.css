@@ -37,6 +37,10 @@
   color: #fff;
   font-weight: 600;
   cursor: pointer;
+  transition: background 0.12s ease, transform 0.08s ease;
+}
+.error-screen-btn:active {
+  transform: scale(0.96);
 }
 .error-screen-btn:hover {
   background: var(--blurple-hover);

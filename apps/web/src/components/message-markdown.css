@@ -1,0 +1,124 @@
+.md-content {
+  min-width: 0;
+  white-space: normal;
+  word-break: break-word;
+}
+/* Let the trailing "(edited)" tag flow inline after the last line of text. */
+.message-content .md-content,
+.md-content > p:last-child {
+  display: inline;
+}
+.md-content p {
+  margin: 0;
+}
+.md-content p + p {
+  margin-top: 4px;
+}
+.md-content ul,
+.md-content ol {
+  margin: 2px 0;
+  padding-left: 22px;
+}
+.md-content h1,
+.md-content h2,
+.md-content h3,
+.md-content h4,
+.md-content h5,
+.md-content h6 {
+  margin: 4px 0 2px;
+  font-size: 1em;
+  font-weight: 700;
+}
+.md-content h1 {
+  font-size: 1.4em;
+}
+.md-content h2 {
+  font-size: 1.2em;
+}
+.md-content h3 {
+  font-size: 1.1em;
+}
+.md-content u {
+  text-decoration: underline;
+}
+.md-content code {
+  background: var(--raised);
+  border: 1px solid var(--divider);
+  border-radius: 4px;
+  padding: 1px 5px;
+  font-family: ui-monospace, 'Cascadia Code', 'JetBrains Mono', Consolas,
+    monospace;
+  font-size: 0.85em;
+}
+.md-content pre {
+  background: var(--raised);
+  border: 1px solid var(--divider);
+  border-radius: 8px;
+  padding: 8px 12px;
+  margin: 4px 0;
+  max-width: 560px;
+  overflow-x: auto;
+}
+.md-content pre code {
+  display: block;
+  background: transparent;
+  border: none;
+  padding: 0;
+  font-size: 13px;
+  line-height: 1.45;
+  white-space: pre;
+}
+.md-content blockquote {
+  margin: 2px 0;
+  padding: 2px 0 2px 12px;
+  border-left: 4px solid var(--text-faint);
+  border-radius: 2px;
+}
+.md-content table {
+  border-collapse: collapse;
+  margin: 4px 0;
+}
+.md-content th,
+.md-content td {
+  border: 1px solid var(--divider);
+  padding: 3px 8px;
+  font-size: 14px;
+}
+.md-link {
+  color: var(--blurple);
+  text-decoration: none;
+}
+.md-link:hover {
+  text-decoration: underline;
+}
+.md-spoiler {
+  display: inline;
+  border: none;
+  font: inherit;
+  padding: 0 3px;
+  border-radius: 4px;
+  background: var(--sidebar);
+  color: transparent;
+  cursor: pointer;
+  user-select: none;
+}
+.md-spoiler:not(.is-revealed) * {
+  color: transparent;
+}
+.md-spoiler.is-revealed {
+  background: var(--hover-overlay);
+  color: inherit;
+  cursor: auto;
+  user-select: auto;
+}
+.md-mention {
+  background: rgba(111, 123, 247, 0.25);
+  color: #dfe1ff;
+  font-weight: 500;
+  border-radius: 4px;
+  padding: 0 3px;
+}
+.md-jumbo {
+  font-size: 2.5em;
+  line-height: 1.2;
+}

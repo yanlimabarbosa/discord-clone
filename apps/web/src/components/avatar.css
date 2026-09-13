@@ -27,6 +27,7 @@
   border-radius: 50%;
   line-height: 0;
   flex-shrink: 0;
+  transition: opacity 0.12s ease;
 }
 
 .avatar-upload-btn:hover {

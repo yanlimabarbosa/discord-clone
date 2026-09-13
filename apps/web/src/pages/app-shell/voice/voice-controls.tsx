@@ -17,6 +17,7 @@ import { useVoiceForce } from '../../../hooks/voice/use-voice-force';
 import { screenQualityStore } from '../../../lib/screen-quality-store';
 import { screenShareOptions } from '../../../lib/screen-quality';
 import { DevicePicker } from './device-picker';
+import { Tooltip } from '../../../components/tooltip';
 import './voice-controls.css';
 
 export function VoiceControls() {
@@ -78,68 +79,82 @@ export function VoiceControls() {
 
   return (
     <div className="vc-bar">
-      <button
-        className={`vc-ctrl-btn ${micOn ? '' : 'vc-ctrl-danger'}`}
-        title={force.muted ? 'Server muted' : micOn ? 'Mute' : 'Unmute'}
-        aria-label={force.muted ? 'Server muted' : micOn ? 'Mute microphone' : 'Unmute microphone'}
-        aria-pressed={!micOn}
-        onClick={toggleMic}
-        disabled={ptt || locked}
-      >
-        {micOn ? <Mic size={20} /> : <MicOff size={20} />}
-      </button>
-      <button
-        className={`vc-ctrl-btn ${deafened ? 'vc-ctrl-danger' : ''}`}
-        title={
+      <Tooltip label={force.muted ? 'Server muted' : micOn ? 'Mute' : 'Unmute'}>
+        <button
+          className={`vc-ctrl-btn ${micOn ? '' : 'vc-ctrl-danger'}`}
+          aria-label={force.muted ? 'Server muted' : micOn ? 'Mute microphone' : 'Unmute microphone'}
+          aria-pressed={!micOn}
+          onClick={toggleMic}
+          disabled={ptt || locked}
+        >
+          {micOn ? <Mic size={20} /> : <MicOff size={20} />}
+        </button>
+      </Tooltip>
+      <Tooltip
+        label={
           force.deafened ? 'Server deafened' : deafened ? 'Undeafen' : 'Deafen'
         }
-        aria-label={force.deafened ? 'Server deafened' : deafened ? 'Undeafen' : 'Deafen'}
-        aria-pressed={deafened}
-        onClick={toggleDeafen}
-        disabled={force.deafened}
       >
-        <Headphones size={20} />
-      </button>
-      <button
-        className={`vc-ctrl-btn ${ptt ? 'vc-ctrl-active' : ''}`}
-        title={ptt ? 'Push-to-talk on (hold Space)' : 'Enable push-to-talk'}
-        aria-label={ptt ? 'Disable push-to-talk' : 'Enable push-to-talk (hold Space)'}
-        aria-pressed={ptt}
-        onClick={() => setPtt((p) => !p)}
+        <button
+          className={`vc-ctrl-btn ${deafened ? 'vc-ctrl-danger' : ''}`}
+          aria-label={force.deafened ? 'Server deafened' : deafened ? 'Undeafen' : 'Deafen'}
+          aria-pressed={deafened}
+          onClick={toggleDeafen}
+          disabled={force.deafened}
+        >
+          <Headphones size={20} />
+        </button>
+      </Tooltip>
+      <Tooltip
+        label={ptt ? 'Push-to-talk on (hold Space)' : 'Enable push-to-talk'}
       >
-        <Radio size={20} />
-      </button>
-      <button
-        className={`vc-ctrl-btn ${isCameraEnabled ? 'vc-ctrl-active' : ''}`}
-        title={isCameraEnabled ? 'Turn off camera' : 'Turn on camera'}
-        aria-label={isCameraEnabled ? 'Turn off camera' : 'Turn on camera'}
-        aria-pressed={isCameraEnabled}
-        onClick={() => localParticipant.setCameraEnabled(!isCameraEnabled)}
+        <button
+          className={`vc-ctrl-btn ${ptt ? 'vc-ctrl-active' : ''}`}
+          aria-label={ptt ? 'Disable push-to-talk' : 'Enable push-to-talk (hold Space)'}
+          aria-pressed={ptt}
+          onClick={() => setPtt((p) => !p)}
+        >
+          <Radio size={20} />
+        </button>
+      </Tooltip>
+      <Tooltip label={isCameraEnabled ? 'Turn off camera' : 'Turn on camera'}>
+        <button
+          className={`vc-ctrl-btn ${isCameraEnabled ? 'vc-ctrl-active' : ''}`}
+          aria-label={isCameraEnabled ? 'Turn off camera' : 'Turn on camera'}
+          aria-pressed={isCameraEnabled}
+          onClick={() => localParticipant.setCameraEnabled(!isCameraEnabled)}
+        >
+          {isCameraEnabled ? <Video size={20} /> : <VideoOff size={20} />}
+        </button>
+      </Tooltip>
+      <Tooltip
+        label={
+          isScreenShareEnabled ? 'Stop sharing' : 'Share screen (with audio)'
+        }
       >
-        {isCameraEnabled ? <Video size={20} /> : <VideoOff size={20} />}
-      </button>
-      <button
-        className={`vc-ctrl-btn ${isScreenShareEnabled ? 'vc-ctrl-active' : ''}`}
-        title={isScreenShareEnabled ? 'Stop sharing' : 'Share screen (with audio)'}
-        aria-label={isScreenShareEnabled ? 'Stop screen share' : 'Share screen with audio'}
-        aria-pressed={isScreenShareEnabled}
-        onClick={toggleScreenShare}
-      >
-        {isScreenShareEnabled ? (
-          <ScreenShareOff size={20} />
-        ) : (
-          <ScreenShare size={20} />
-        )}
-      </button>
+        <button
+          className={`vc-ctrl-btn ${isScreenShareEnabled ? 'vc-ctrl-active' : ''}`}
+          aria-label={isScreenShareEnabled ? 'Stop screen share' : 'Share screen with audio'}
+          aria-pressed={isScreenShareEnabled}
+          onClick={toggleScreenShare}
+        >
+          {isScreenShareEnabled ? (
+            <ScreenShareOff size={20} />
+          ) : (
+            <ScreenShare size={20} />
+          )}
+        </button>
+      </Tooltip>
       <DevicePicker />
-      <button
-        className="vc-ctrl-btn vc-ctrl-leave"
-        title="Disconnect"
-        aria-label="Disconnect from voice"
-        onClick={() => room.disconnect()}
-      >
-        <PhoneOff size={20} />
-      </button>
+      <Tooltip label="Disconnect">
+        <button
+          className="vc-ctrl-btn vc-ctrl-leave"
+          aria-label="Disconnect from voice"
+          onClick={() => room.disconnect()}
+        >
+          <PhoneOff size={20} />
+        </button>
+      </Tooltip>
     </div>
   );
 }

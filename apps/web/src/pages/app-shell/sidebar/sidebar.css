@@ -1,0 +1,18 @@
+.user-panel-voice {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.user-panel-voice-off {
+  color: var(--danger);
+}
+
+.user-panel-voice-off:hover:not(:disabled) {
+  color: var(--danger);
+}
+
+.user-panel-voice .icon-btn:disabled {
+  opacity: 0.6;
+  cursor: default;
+}

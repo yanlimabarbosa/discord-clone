@@ -1,0 +1,39 @@
+.connection-banner {
+  position: fixed;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1000;
+  padding: 5px 16px;
+  border-radius: 0 0 var(--radius) var(--radius);
+  font-size: 13px;
+  font-weight: 600;
+  animation: connection-banner-drop 0.18s ease;
+}
+
+.connection-banner-reconnecting {
+  background: #f0b232;
+  color: #14161c;
+}
+
+.connection-banner-reconnected {
+  background: var(--green);
+  color: #14161c;
+}
+
+@keyframes connection-banner-drop {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -100%);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .connection-banner {
+    animation: none;
+  }
+}

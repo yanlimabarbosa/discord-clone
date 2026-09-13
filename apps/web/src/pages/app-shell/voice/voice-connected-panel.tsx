@@ -1,5 +1,6 @@
 import { useLocalParticipant } from '@livekit/components-react';
 import { Mic, MicOff, PhoneOff, Volume2 } from 'lucide-react';
+import { Tooltip } from '../../../components/tooltip';
 import type { ActiveVoice } from '../use-app-shell';
 
 type VoiceConnectedPanelProps = {
@@ -26,18 +27,26 @@ export function VoiceConnectedPanel({
         </span>
       </div>
       <div className="voice-connected-actions">
-        <button
-          className="icon-btn"
-          title={isMicrophoneEnabled ? 'Mute' : 'Unmute'}
-          onClick={() =>
-            localParticipant.setMicrophoneEnabled(!isMicrophoneEnabled)
-          }
-        >
-          {isMicrophoneEnabled ? <Mic size={16} /> : <MicOff size={16} />}
-        </button>
-        <button className="icon-btn icon-btn-danger" title="Disconnect" onClick={onLeave}>
-          <PhoneOff size={16} />
-        </button>
+        <Tooltip label={isMicrophoneEnabled ? 'Mute' : 'Unmute'}>
+          <button
+            className="icon-btn"
+            aria-label={isMicrophoneEnabled ? 'Mute' : 'Unmute'}
+            onClick={() =>
+              localParticipant.setMicrophoneEnabled(!isMicrophoneEnabled)
+            }
+          >
+            {isMicrophoneEnabled ? <Mic size={16} /> : <MicOff size={16} />}
+          </button>
+        </Tooltip>
+        <Tooltip label="Disconnect">
+          <button
+            className="icon-btn icon-btn-danger"
+            aria-label="Disconnect"
+            onClick={onLeave}
+          >
+            <PhoneOff size={16} />
+          </button>
+        </Tooltip>
       </div>
     </div>
   );

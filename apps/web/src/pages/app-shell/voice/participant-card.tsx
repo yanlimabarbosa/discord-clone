@@ -1,23 +1,43 @@
-import { useRef, useState, type MouseEvent } from 'react';
+import { memo, useRef, useState, type MouseEvent } from 'react';
 import {
+  useConnectionQualityIndicator,
   useIsSpeaking,
   VideoTrack,
   type TrackReferenceOrPlaceholder,
 } from '@livekit/components-react';
-import { Track, RemoteParticipant, LocalParticipant } from 'livekit-client';
+import {
+  ConnectionQuality,
+  Track,
+  RemoteParticipant,
+  LocalParticipant,
+} from 'livekit-client';
 import { Maximize2, MicOff, HeadphoneOff } from 'lucide-react';
 import { ParticipantContextMenu } from './participant-context-menu';
+import { Tooltip } from '../../../components/tooltip';
 import { useParticipantMuted } from '../../../hooks/voice/use-participant-muted';
 import { useDeafenState } from '../../../hooks/voice/use-deafen-state';
+import './voice-extras.css';
 
 type ParticipantCardProps = {
   trackRef: TrackReferenceOrPlaceholder;
   onSelect?: () => void;
 };
 
-export function ParticipantCard({ trackRef, onSelect }: ParticipantCardProps) {
+const QUALITY_LABEL: Record<ConnectionQuality, string> = {
+  [ConnectionQuality.Excellent]: 'Connection: excellent',
+  [ConnectionQuality.Good]: 'Connection: good',
+  [ConnectionQuality.Poor]: 'Connection: poor',
+  [ConnectionQuality.Lost]: 'Connection lost',
+  [ConnectionQuality.Unknown]: 'Connection: unknown',
+};
+
+export const ParticipantCard = memo(function ParticipantCard({
+  trackRef,
+  onSelect,
+}: ParticipantCardProps) {
   const participant = trackRef.participant;
   const speaking = useIsSpeaking(participant);
+  const { quality } = useConnectionQualityIndicator({ participant });
   const micMuted = useParticipantMuted(participant);
   const isDeafened = !!useDeafenState()[participant.identity];
   const isScreen = trackRef.source === Track.Source.ScreenShare;
@@ -82,20 +102,26 @@ export function ParticipantCard({ trackRef, onSelect }: ParticipantCardProps) {
         </div>
       )}
 
+      {isScreen && <span className="vc-live-badge">LIVE</span>}
+
       {hasVideo && (
-        <button
-          className="vc-fullscreen"
-          title="Fullscreen"
-          onClick={goFullscreen}
-        >
-          <Maximize2 size={16} />
-        </button>
+        <Tooltip label="Fullscreen" side="bottom">
+          <button
+            className="vc-fullscreen"
+            aria-label="Fullscreen"
+            onClick={goFullscreen}
+          >
+            <Maximize2 size={16} />
+          </button>
+        </Tooltip>
       )}
 
       {!isScreen && (isDeafened || micMuted) && (
-        <div className="vc-status-badge" title={isDeafened ? 'Deafened' : 'Muted'}>
-          {isDeafened ? <HeadphoneOff size={16} /> : <MicOff size={16} />}
-        </div>
+        <Tooltip label={isDeafened ? 'Deafened' : 'Muted'} side="bottom">
+          <div className="vc-status-badge">
+            {isDeafened ? <HeadphoneOff size={16} /> : <MicOff size={16} />}
+          </div>
+        </Tooltip>
       )}
 
       <div className="vc-name">
@@ -109,9 +135,21 @@ export function ParticipantCard({ trackRef, onSelect }: ParticipantCardProps) {
           </span>
         )}
         {muted && (
-          <span className="vc-name-icon" title="Silenced by you">
-            🔇
-          </span>
+          <Tooltip label="Silenced by you">
+            <span className="vc-name-icon">🔇</span>
+          </Tooltip>
+        )}
+        {!isScreen && (
+          <Tooltip label={QUALITY_LABEL[quality]} side="bottom">
+            <span
+              className={`vc-quality vc-quality-${quality}`}
+              aria-label={QUALITY_LABEL[quality]}
+            >
+              <span />
+              <span />
+              <span />
+            </span>
+          </Tooltip>
         )}
       </div>
 
@@ -130,4 +168,4 @@ export function ParticipantCard({ trackRef, onSelect }: ParticipantCardProps) {
       )}
     </div>
   );
-}
+});

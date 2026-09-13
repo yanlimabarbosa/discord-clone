@@ -1,0 +1,17 @@
+.home-dm-row-unread .home-dm-name {
+  font-weight: 700;
+  color: var(--text-hi, var(--text));
+}
+
+.home-dm-row-unread .home-dm-last {
+  color: var(--text);
+}
+
+.home-dm-unread-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--text-hi, var(--text));
+  flex-shrink: 0;
+  margin-left: auto;
+}

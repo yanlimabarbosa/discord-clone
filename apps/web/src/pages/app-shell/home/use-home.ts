@@ -11,7 +11,7 @@ export type HomeConversation = {
 
 export function useHome() {
   const { data: friends, isLoading: friendsLoading } = useFriends();
-  const { data: dms } = useDms();
+  const { data: dms, isLoading: dmsLoading } = useDms();
   const openDm = useOpenDm();
   const [active, setActive] = useState<HomeConversation | null>(null);
 
@@ -19,6 +19,7 @@ export function useHome() {
     friends: friends ?? { friends: [], incoming: [], outgoing: [] },
     friendsLoading,
     dms: dms ?? [],
+    dmsLoading,
     active,
     openWith: async (user: PublicUser) => {
       const conv = await openDm.mutateAsync(user.id);

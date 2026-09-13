@@ -1,16 +1,18 @@
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import {
   useTracks,
+  useConnectionState,
   GridLayout,
   RoomAudioRenderer,
   type TrackReferenceOrPlaceholder,
 } from '@livekit/components-react';
-import { Track } from 'livekit-client';
+import { ConnectionState, Track } from 'livekit-client';
 import { ParticipantCard } from './participant-card';
 import { TileInGrid } from './tile-in-grid';
 import { VoiceSounds } from './voice-sounds';
 import { VoiceControls } from './voice-controls';
 import { WatchTheater } from './watch-theater';
+import './voice-extras.css';
 
 type VoiceRoomProps = {
   channelId: string;
@@ -21,6 +23,25 @@ function trackKey(t: TrackReferenceOrPlaceholder): string {
   return `${t.participant.sid}-${t.source}`;
 }
 
+function StripTile({
+  trackRef,
+  onFocus,
+}: {
+  trackRef: TrackReferenceOrPlaceholder;
+  onFocus?: (key: string) => void;
+}) {
+  const key = trackKey(trackRef);
+  const onSelect = useCallback(() => onFocus?.(key), [onFocus, key]);
+  return (
+    <div className="vc-strip-item">
+      <ParticipantCard
+        trackRef={trackRef}
+        onSelect={onFocus ? onSelect : undefined}
+      />
+    </div>
+  );
+}
+
 export function VoiceRoom({ channelId, watchOpen }: VoiceRoomProps) {
   const tracks = useTracks(
     [
@@ -29,8 +50,13 @@ export function VoiceRoom({ channelId, watchOpen }: VoiceRoomProps) {
     ],
     { onlySubscribed: false },
   );
+  const connectionState = useConnectionState();
+  const reconnecting =
+    connectionState === ConnectionState.Reconnecting ||
+    connectionState === ConnectionState.SignalReconnecting;
 
   const [focusedKey, setFocusedKey] = useState<string | null>(null);
+  const clearFocus = useCallback(() => setFocusedKey(null), []);
   const focused = focusedKey
     ? tracks.find((t) => trackKey(t) === focusedKey)
     : null;
@@ -39,6 +65,13 @@ export function VoiceRoom({ channelId, watchOpen }: VoiceRoomProps) {
     <div className="vc-room">
       <VoiceSounds />
 
+      {reconnecting && (
+        <div className="vc-reconnecting" role="status">
+          <span className="vc-reconnecting-dot" />
+          Voice reconnecting…
+        </div>
+      )}
+
       {watchOpen ? (
         <>
           <div className="vc-watch-area">
@@ -46,31 +79,25 @@ export function VoiceRoom({ channelId, watchOpen }: VoiceRoomProps) {
           </div>
           <div className="vc-strip vc-watch-strip">
             {tracks.map((t) => (
-              <div className="vc-strip-item" key={trackKey(t)}>
-                <ParticipantCard trackRef={t} />
-              </div>
+              <StripTile key={trackKey(t)} trackRef={t} />
             ))}
           </div>
         </>
       ) : focused ? (
         <div className="vc-stage-focus">
           <div className="vc-focused">
-            <ParticipantCard
-              trackRef={focused}
-              onSelect={() => setFocusedKey(null)}
-            />
+            <ParticipantCard trackRef={focused} onSelect={clearFocus} />
           </div>
           {tracks.length > 1 && (
             <div className="vc-strip">
               {tracks
                 .filter((t) => trackKey(t) !== focusedKey)
                 .map((t) => (
-                  <div className="vc-strip-item" key={trackKey(t)}>
-                    <ParticipantCard
-                      trackRef={t}
-                      onSelect={() => setFocusedKey(trackKey(t))}
-                    />
-                  </div>
+                  <StripTile
+                    key={trackKey(t)}
+                    trackRef={t}
+                    onFocus={setFocusedKey}
+                  />
                 ))}
             </div>
           )}

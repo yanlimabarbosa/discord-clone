@@ -1,0 +1,11 @@
+/* The button now only renders when messaging is possible, so it should
+   look and behave enabled (profile-card.css styles it as inert). */
+.profile-message-btn {
+  cursor: pointer;
+  opacity: 1;
+  transition: background 0.15s ease;
+}
+
+.profile-message-btn:hover {
+  background: var(--blurple-hover);
+}

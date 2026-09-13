@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, useSyncExternalStore } from 'react';
 import { Settings } from 'lucide-react';
 import { useRoomContext } from '@livekit/components-react';
+import { Tooltip } from '../../../components/tooltip';
 import { screenQualityStore } from '../../../lib/screen-quality-store';
 import {
   RESOLUTIONS,
@@ -58,13 +59,15 @@ export function DevicePicker() {
 
   return (
     <div className="vc-device" ref={ref}>
-      <button
-        className={`vc-ctrl-btn ${open ? 'vc-ctrl-active' : ''}`}
-        title="Audio & video devices"
-        onClick={() => setOpen((o) => !o)}
-      >
-        <Settings size={20} />
-      </button>
+      <Tooltip label="Audio & video devices">
+        <button
+          className={`vc-ctrl-btn ${open ? 'vc-ctrl-active' : ''}`}
+          aria-label="Audio & video devices"
+          onClick={() => setOpen((o) => !o)}
+        >
+          <Settings size={20} />
+        </button>
+      </Tooltip>
       {open && (
         <div className="vc-device-menu">
           <div className="vc-device-group">Microphone</div>

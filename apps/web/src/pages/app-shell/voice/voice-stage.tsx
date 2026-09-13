@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Volume2, Users, MessageSquare, Tv } from 'lucide-react';
 import { VoiceRoom } from './voice-room';
 import { ChannelChat } from '../channel-view/channel-chat';
+import { Tooltip } from '../../../components/tooltip';
 import type { ActiveVoice } from '../use-app-shell';
 
 type VoiceStageProps = {
@@ -28,27 +29,33 @@ export function VoiceStage({
         </span>
         <span className="content-title">{voice.name}</span>
         <div className="content-header-actions">
-          <button
-            className={`header-members-btn ${watchOpen ? 'header-btn-active' : ''}`}
-            title="Watch Together"
-            onClick={() => setWatchOpen((w) => !w)}
-          >
-            <Tv size={20} />
-          </button>
-          <button
-            className={`header-members-btn ${chatOpen ? 'header-btn-active' : ''}`}
-            title="Toggle chat"
-            onClick={onToggleChat}
-          >
-            <MessageSquare size={20} />
-          </button>
-          <button
-            className={`header-members-btn ${membersOpen ? 'header-btn-active' : ''}`}
-            title="Toggle member list"
-            onClick={onToggleMembers}
-          >
-            <Users size={20} />
-          </button>
+          <Tooltip label="Watch Together" side="bottom">
+            <button
+              className={`header-members-btn ${watchOpen ? 'header-btn-active' : ''}`}
+              aria-label="Watch Together"
+              onClick={() => setWatchOpen((w) => !w)}
+            >
+              <Tv size={20} />
+            </button>
+          </Tooltip>
+          <Tooltip label="Toggle chat" side="bottom">
+            <button
+              className={`header-members-btn ${chatOpen ? 'header-btn-active' : ''}`}
+              aria-label="Toggle chat"
+              onClick={onToggleChat}
+            >
+              <MessageSquare size={20} />
+            </button>
+          </Tooltip>
+          <Tooltip label="Toggle member list" side="bottom">
+            <button
+              className={`header-members-btn ${membersOpen ? 'header-btn-active' : ''}`}
+              aria-label="Toggle member list"
+              onClick={onToggleMembers}
+            >
+              <Users size={20} />
+            </button>
+          </Tooltip>
         </div>
       </header>
       <div className="voice-split-h">

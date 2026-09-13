@@ -23,13 +23,28 @@ export function useTyping(channelId: string | null): string[] {
 
     const socket = getSocket();
     const entries = entriesRef.current;
+    let interval: number | null = null;
+    let lastKey = '';
 
+    // The expiry interval only runs while someone is typing, and setNames is
+    // skipped when the derived list is unchanged, so idle channels never
+    // re-render.
     const sync = () => {
       const now = Date.now();
       for (const [userId, entry] of entries) {
         if (entry.expires <= now) entries.delete(userId);
       }
-      setNames(Array.from(entries.values()).map((e) => e.name));
+      if (entries.size === 0 && interval !== null) {
+        window.clearInterval(interval);
+        interval = null;
+      } else if (entries.size > 0 && interval === null) {
+        interval = window.setInterval(sync, 1000);
+      }
+      const next = Array.from(entries.values()).map((e) => e.name);
+      const nextKey = next.join('|');
+      if (nextKey === lastKey) return;
+      lastKey = nextKey;
+      setNames(next);
     };
 
     const onTyping = (event: TypingEvent) => {
@@ -46,11 +61,10 @@ export function useTyping(channelId: string | null): string[] {
     };
 
     socket.on('typing', onTyping);
-    const interval = window.setInterval(sync, 1000);
 
     return () => {
       socket.off('typing', onTyping);
-      window.clearInterval(interval);
+      if (interval !== null) window.clearInterval(interval);
       entries.clear();
     };
   }, [channelId]);

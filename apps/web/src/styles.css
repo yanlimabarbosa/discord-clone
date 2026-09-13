@@ -1,17 +1,35 @@
+@font-face {
+  font-family: 'Inter';
+  src: url('/fonts/InterVariable.woff2') format('woff2');
+  font-weight: 100 900;
+  font-display: swap;
+  font-style: normal;
+}
+
 :root {
+  /* Surface ladder (darkest -> lightest) */
+  --rail: #08090d;
   --abyss: #0b0c11;
-  --rail: #0b0c11;
+  --floating: #0f1116;
+  --sunken: #101218;
   --sidebar: #14161c;
   --content: #191c23;
-  --floating: #0f1116;
-  --input: #20242d;
-  --input-border: #2a2f3a;
-  --raised: #20242d;
-  --hover: #20242d;
+  --input: #1d2028;
+  --raised: #232730;
+  --hover: #252a34;
   --active: #262b35;
+  --raised-hi: #2b303b;
+  --input-border: #2a2f3a;
+  /* Overlays / tints */
+  --hover-overlay: rgba(255, 255, 255, 0.04);
+  --active-overlay: rgba(255, 255, 255, 0.07);
+  --selected-tint: rgba(111, 123, 247, 0.14);
+  /* Text */
+  --text-hi: #fbfbfe;
   --text: #eceef4;
   --text-muted: #868c9c;
   --text-faint: #5a6070;
+  /* Accents */
   --blurple: #6f7bf7;
   --blurple-hover: #4a54d6;
   --iris-bright: #8b95ff;
@@ -19,8 +37,13 @@
   --danger: #f0496b;
   --divider: #2a2f3a;
   --line-soft: #21252e;
+  /* Elevation */
+  --elevation-low: 0 1px 3px rgba(0, 0, 0, 0.24);
+  --elevation-medium: 0 4px 12px rgba(0, 0, 0, 0.28);
+  --elevation-high: 0 8px 24px rgba(0, 0, 0, 0.4);
+  --elevation-modal: 0 16px 48px rgba(0, 0, 0, 0.55);
   --radius: 10px;
-  --font: "gg sans", ui-sans-serif, -apple-system, BlinkMacSystemFont,
+  --font: 'Inter', "gg sans", ui-sans-serif, -apple-system, BlinkMacSystemFont,
     "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
 }
 
@@ -65,7 +88,17 @@
 .voice-connected { animation: slideUp 0.18s ease; }
 
 @media (prefers-reduced-motion: reduce) {
-  * { animation: none !important; }
+  /* Kill decorative motion, but let loading spinners keep spinning —
+     a frozen spinner reads as a hang. */
+  *:not(.composer-spin):not(.attach-spinner),
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+  * {
+    scroll-behavior: auto !important;
+  }
 }
 
 html,
@@ -76,6 +109,8 @@ body,
 
 body {
   font-family: var(--font);
+  letter-spacing: -0.011em;
+  font-feature-settings: 'cv11';
   color: var(--text);
   background: var(--content);
   -webkit-font-smoothing: antialiased;
@@ -302,7 +337,7 @@ button {
 .server-divider {
   width: 32px;
   height: 1px;
-  background: #23262f;
+  background: linear-gradient(90deg, transparent, #23262f 20%, #23262f 80%, transparent);
   border-radius: 1px;
 }
 
@@ -319,12 +354,16 @@ button {
   padding: 0 16px;
   font-size: 15px;
   font-weight: 600;
-  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.24);
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.24), 0 2px 6px rgba(0, 0, 0, 0.14);
+  position: relative;
+  z-index: 2;
 }
 .sidebar-body {
   flex: 1;
   padding: 12px 8px;
   overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
 }
 .sidebar-empty {
   color: var(--text-faint);
@@ -385,6 +424,10 @@ button {
   background: var(--hover);
   color: var(--text);
 }
+.icon-btn:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
 
 .content {
   flex: 1;
@@ -402,7 +445,9 @@ button {
   display: flex;
   align-items: center;
   padding: 0 16px;
-  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.24);
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.24), 0 2px 6px rgba(0, 0, 0, 0.14);
+  position: relative;
+  z-index: 2;
 }
 .content-title {
   font-weight: 600;
@@ -451,13 +496,14 @@ button {
   font-size: 11px;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.02em;
+  letter-spacing: 0.04em;
   color: var(--text-faint);
 }
 .channel-add {
   color: var(--text-faint);
   font-size: 16px;
   line-height: 1;
+  transition: color 0.12s ease, transform 0.08s ease;
 }
 .channel-group-actions {
   display: flex;
@@ -508,7 +554,8 @@ button {
   font-size: 11px;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.02em;
+  letter-spacing: 0.04em;
+  transition: color 0.12s ease;
 }
 .category-toggle:hover {
   color: var(--text);
@@ -638,6 +685,8 @@ button {
   flex: 1;
   min-height: 0;
   overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
   padding: 16px 16px 8px;
   display: flex;
   flex-direction: column;
@@ -686,8 +735,8 @@ button {
   color: var(--text-faint);
 }
 .message-content {
-  font-size: 15px;
-  line-height: 1.4;
+  font-size: 16px;
+  line-height: 1.5;
   color: var(--text);
   white-space: pre-wrap;
   word-break: break-word;
@@ -797,7 +846,9 @@ button {
 .modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.6);
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -809,7 +860,7 @@ button {
   background: var(--content);
   border-radius: 12px;
   padding: 24px;
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
+  box-shadow: var(--elevation-modal);
 }
 .modal-title {
   font-size: 20px;
@@ -838,6 +889,7 @@ button {
   color: var(--text);
   font-size: 14px;
   font-weight: 500;
+  transition: background 0.12s ease, color 0.12s ease, transform 0.08s ease;
 }
 .btn-ghost:hover {
   text-decoration: underline;
@@ -1092,6 +1144,7 @@ button {
 }
 .channel-name {
   flex: 1;
+  min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -1115,13 +1168,15 @@ button {
   background: var(--sidebar);
   padding: 16px 8px;
   overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
   flex-shrink: 0;
 }
 .member-group-header {
   font-size: 11px;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.02em;
+  letter-spacing: 0.04em;
   color: var(--text-faint);
   padding: 12px 8px 4px;
 }
@@ -1138,6 +1193,9 @@ button {
 }
 .member-row:hover {
   background: var(--hover);
+}
+.member-row:hover .presence-dot {
+  border-color: var(--hover);
 }
 .member-offline {
   opacity: 0.4;
@@ -1173,6 +1231,7 @@ button {
 .member-name {
   font-size: 14px;
   font-weight: 500;
+  line-height: 1.4;
   color: var(--text);
 }
 .member-voice {
@@ -1273,16 +1332,24 @@ button {
 /* ========== UI POLISH PASS ========== */
 
 /* Custom scrollbars (Discord-style thin) */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #2a2f3a transparent;
+}
 *::-webkit-scrollbar {
   width: 8px;
   height: 8px;
 }
 *::-webkit-scrollbar-thumb {
-  background: #1a1b1e;
-  border-radius: 4px;
+  background: #2a2f3a;
+  border: 3px solid transparent;
+  background-clip: padding-box;
+  border-radius: 8px;
 }
 *::-webkit-scrollbar-thumb:hover {
-  background: #0d0e10;
+  background: #343b48;
+  border: 3px solid transparent;
+  background-clip: padding-box;
 }
 *::-webkit-scrollbar-track {
   background: transparent;
@@ -1298,7 +1365,19 @@ button {
 .channel-edit:active,
 .sidebar-invite:active,
 .header-members-btn:active,
-.server-pill:active {
+.server-pill:active,
+.home-tab:active,
+.home-dm-row:active,
+.home-friends-btn:active,
+.friend-icon-btn:active,
+.add-friend-submit:active,
+.watch-cbtn:active,
+.settings-tab:active,
+.settings-close:active,
+.server-menu-item:active,
+.occupant-menu-item:active,
+.vc-ctx-item:active,
+.vc-device-item:active {
   transform: scale(0.95);
 }
 
@@ -1345,24 +1424,28 @@ button {
   box-shadow: 0 0 0 3px rgba(111, 123, 247, 0.15);
 }
 
-/* Discord-style active/hover server indicator pill on the rail */
+/* Discord-style active/hover server indicator pill on the rail.
+   Fixed height + scaleY so the transition never triggers layout. */
 .server-pill::before {
   content: '';
   position: absolute;
   left: -12px;
   top: 50%;
-  transform: translateY(-50%);
   width: 4px;
-  height: 0;
+  height: 28px;
   background: #fff;
   border-radius: 0 4px 4px 0;
-  transition: height 0.15s ease;
+  transform: translateY(-50%) scaleY(0);
+  opacity: 0;
+  transition: transform 0.15s ease, opacity 0.15s ease;
 }
 .server-pill:hover::before {
-  height: 20px;
+  transform: translateY(-50%) scaleY(0.72);
+  opacity: 1;
 }
 .server-pill-active::before {
-  height: 28px;
+  transform: translateY(-50%) scaleY(1);
+  opacity: 1;
 }
 
 /* Invite button / links */
@@ -1422,6 +1505,8 @@ button {
 .explore-list {
   max-height: 340px;
   overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
   margin: 16px 0;
   display: flex;
   flex-direction: column;
@@ -1630,4 +1715,15 @@ button {
 .vc-tile:fullscreen .vc-video {
   object-fit: contain;
   background: #000;
+}
+
+/* ---------- Focus + selection ---------- */
+:where(button, a, [role="button"], [tabindex], input, textarea, select):focus-visible {
+  outline: 2px solid var(--iris-bright);
+  outline-offset: 2px;
+}
+
+::selection {
+  background: rgba(111, 123, 247, 0.4);
+  color: #fff;
 }

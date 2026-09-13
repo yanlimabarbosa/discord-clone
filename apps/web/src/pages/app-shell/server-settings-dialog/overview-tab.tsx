@@ -1,6 +1,8 @@
-import { useRef, useState, type ChangeEvent } from 'react';
+import { useRef, useState, type ChangeEvent, type FormEvent } from 'react';
 import { ImagePlus } from 'lucide-react';
 import { Avatar } from '../../../components/avatar';
+import { Tooltip } from '../../../components/tooltip';
+import { toastStore } from '../../../lib/toast-store';
 import { useRenameServer } from '../../../hooks/servers/use-rename-server';
 import { useUploadServerIcon } from '../../../hooks/servers/use-upload-server-icon';
 import { useUpdateServerPrivacy } from '../../../hooks/servers/use-update-server-privacy';
@@ -26,8 +28,20 @@ export function OverviewTab({ server, isOwner, onDeleted }: OverviewTabProps) {
 
   const onPickIcon = (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) uploadIcon.mutate(file);
+    if (file) {
+      uploadIcon.mutate(file, {
+        onSuccess: () => toastStore.success('Server updated'),
+      });
+    }
     e.target.value = '';
+  };
+
+  const onRename = (e: FormEvent) => {
+    e.preventDefault();
+    if (!dirty || rename.isPending) return;
+    rename.mutate(name.trim(), {
+      onSuccess: () => toastStore.success('Server updated'),
+    });
   };
 
   return (
@@ -35,16 +49,18 @@ export function OverviewTab({ server, isOwner, onDeleted }: OverviewTabProps) {
       <h2 className="settings-title">Server Overview</h2>
 
       <div className="settings-icon-row">
-        <button
-          className="settings-icon-btn"
-          onClick={() => fileRef.current?.click()}
-          title="Upload icon"
-        >
-          <Avatar name={server.name} avatarUrl={server.iconUrl} size={80} />
-          <span className="settings-icon-overlay">
-            <ImagePlus size={20} />
-          </span>
-        </button>
+        <Tooltip label="Upload icon">
+          <button
+            className="settings-icon-btn"
+            onClick={() => fileRef.current?.click()}
+            aria-label="Upload icon"
+          >
+            <Avatar name={server.name} avatarUrl={server.iconUrl} size={80} />
+            <span className="settings-icon-overlay">
+              <ImagePlus size={20} />
+            </span>
+          </button>
+        </Tooltip>
         <input
           ref={fileRef}
           type="file"
@@ -59,25 +75,30 @@ export function OverviewTab({ server, isOwner, onDeleted }: OverviewTabProps) {
       </div>
 
       <label className="settings-label">Server Name</label>
-      <div className="settings-inline">
+      <form className="settings-inline" onSubmit={onRename}>
         <input
           className="field-input"
           value={name}
           onChange={(e) => setName(e.target.value)}
         />
         <button
+          type="submit"
           className="btn-primary"
           disabled={!dirty || rename.isPending}
-          onClick={() => rename.mutate(name.trim())}
         >
-          Save
+          {rename.isPending ? 'Saving…' : 'Save'}
         </button>
-      </div>
+      </form>
 
       <label className="settings-label">Privacy</label>
       <button
         className="settings-toggle-row"
-        onClick={() => privacy.mutate(!server.isPublic)}
+        aria-busy={privacy.isPending}
+        onClick={() =>
+          privacy.mutate(!server.isPublic, {
+            onSuccess: () => toastStore.success('Server updated'),
+          })
+        }
         disabled={privacy.isPending}
       >
         <div>
@@ -122,6 +143,7 @@ export function OverviewTab({ server, isOwner, onDeleted }: OverviewTabProps) {
                 disabled={deleteServer.isPending}
                 onClick={async () => {
                   await deleteServer.mutateAsync();
+                  toastStore.success('Server deleted');
                   onDeleted();
                 }}
               >

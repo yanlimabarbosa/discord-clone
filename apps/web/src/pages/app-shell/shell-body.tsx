@@ -50,6 +50,7 @@ export function ShellBody({ shell, inVoice }: ShellBodyProps) {
     <div className="shell">
       <ServerRail
         servers={shell.servers}
+        loading={shell.serversLoading}
         activeServerId={shell.activeServerId}
         homeActive={shell.homeActive}
         onSelect={shell.selectServer}
@@ -135,6 +136,9 @@ function ServerBody({ shell, inVoice, onInvite }: ServerBodyProps) {
       <ChannelSidebar
         server={shell.activeServer}
         channels={shell.channels}
+        loading={
+          shell.activeServer ? shell.channelsLoading : shell.serversLoading
+        }
         activeChannelId={shell.activeChannelId}
         onSelectChannel={shell.selectChannel}
         onInvite={onInvite}
@@ -171,6 +175,10 @@ function ServerBody({ shell, inVoice, onInvite }: ServerBodyProps) {
           membersOpen={textPanel === 'members'}
           onToggleMembers={toggleTextMembers}
         />
+      ) : shell.serversLoading || shell.channelsLoading ? (
+        <main className="content">
+          <div className="content-empty" />
+        </main>
       ) : (
         <main className="content">
           <div className="content-empty">

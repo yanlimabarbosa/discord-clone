@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Plus } from 'lucide-react';
 import { useRoles } from '../../../hooks/roles/use-roles';
 import { useCreateRole } from '../../../hooks/roles/use-create-role';
+import { toastStore } from '../../../lib/toast-store';
 import { RoleEditor } from './role-editor';
 import type { Server } from '../../../types/server';
 
@@ -25,6 +26,7 @@ export function RolesTab({ server }: RolesTabProps) {
           className="btn-primary"
           onClick={async () => {
             const role = await createRole.mutateAsync({ name: 'new role' });
+            toastStore.success('Role created');
             setSelectedId(role.id);
           }}
           disabled={createRole.isPending}

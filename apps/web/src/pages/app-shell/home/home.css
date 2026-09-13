@@ -8,6 +8,8 @@
   gap: 2px;
   padding: 8px;
   overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
   flex: 1;
 }
 
@@ -40,7 +42,7 @@
   padding: 16px 10px 4px;
   font-size: 12px;
   font-weight: 600;
-  letter-spacing: 0.02em;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
   color: var(--text-faint);
 }
@@ -92,6 +94,7 @@
 
 .home-dm-last {
   font-size: 12px;
+  line-height: 1.4;
   color: var(--text-faint);
   white-space: nowrap;
   overflow: hidden;
@@ -186,6 +189,8 @@
 .home-friends-body {
   flex: 1;
   overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
   padding: 16px;
 }
 
@@ -194,7 +199,7 @@
   font-size: 12px;
   font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.02em;
+  letter-spacing: 0.04em;
   color: var(--text-faint);
 }
 
@@ -314,7 +319,6 @@
   background: none;
   color: var(--text);
   font-size: 15px;
-  outline: none;
   padding: 4px 8px;
 }
 
@@ -375,6 +379,8 @@
 .dm-messages {
   flex: 1;
   overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
   padding: 16px;
   display: flex;
   flex-direction: column;
@@ -408,6 +414,7 @@
   gap: 12px;
   padding: 6px 8px;
   border-radius: 6px;
+  transition: background 0.08s ease;
 }
 
 .dm-msg:hover {
@@ -437,8 +444,8 @@
 
 .dm-msg-text {
   color: #dbdee1;
-  font-size: 15px;
-  line-height: 1.375;
+  font-size: 16px;
+  line-height: 1.5;
   word-wrap: break-word;
   white-space: pre-wrap;
 }

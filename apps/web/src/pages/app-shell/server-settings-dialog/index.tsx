@@ -6,6 +6,7 @@ import { RolesTab } from './roles-tab';
 import { useMyPermissions } from '../../../hooks/roles/use-my-permissions';
 import { Permissions, hasPermission } from '../../../lib/permissions';
 import { useEscapeKey } from '../../../hooks/use-escape-key';
+import { Tooltip } from '../../../components/tooltip';
 import type { Server } from '../../../types/server';
 import './server-settings.css';
 
@@ -60,14 +61,15 @@ export function ServerSettingsDialog({
               </button>
             ))}
           </div>
-          <button
-            className="settings-close"
-            onClick={onClose}
-            title="Close"
-            aria-label="Close"
-          >
-            <X size={20} />
-          </button>
+          <Tooltip label="Close">
+            <button
+              className="settings-close"
+              onClick={onClose}
+              aria-label="Close"
+            >
+              <X size={20} />
+            </button>
+          </Tooltip>
         </div>
 
         <div className="settings-body">

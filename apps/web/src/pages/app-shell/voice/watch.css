@@ -72,6 +72,16 @@
   font-weight: 600;
   cursor: pointer;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+  transition: transform 0.12s ease, box-shadow 0.12s ease, filter 0.12s ease;
+}
+.watch-sync:hover {
+  transform: translateX(-50%) translateY(-1px);
+  filter: brightness(1.08);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.55);
+}
+.watch-sync:active {
+  transform: translateX(-50%) scale(0.96);
+  filter: brightness(0.96);
 }
 
 .watch-controls {
@@ -137,6 +147,7 @@
   top: 0;
   bottom: 0;
   background: linear-gradient(90deg, var(--blurple), var(--iris-bright));
+  transition: width 0.2s linear;
 }
 .watch-time {
   font-size: 11px;
@@ -177,7 +188,6 @@
   min-width: 0;
   background: none;
   border: none;
-  outline: none;
   color: var(--text-hi);
   font-size: 14px;
 }
@@ -188,6 +198,7 @@
   font-size: 20px;
   line-height: 1;
   cursor: pointer;
+  transition: color 0.12s ease;
 }
 .watch-search-clear:hover {
   color: var(--text-hi);
@@ -195,6 +206,8 @@
 .watch-side-body {
   flex: 1;
   overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
   padding-bottom: 8px;
 }
 .watch-section {
@@ -300,6 +313,7 @@
   cursor: pointer;
   display: flex;
   align-items: center;
+  transition: color 0.12s ease;
 }
 .watch-clear:hover,
 .watch-qremove:hover {
@@ -308,6 +322,8 @@
 .watch-queue {
   flex: 1;
   overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
 }
 .watch-qrow {
   cursor: default;
@@ -317,4 +333,10 @@
   font-size: 13px;
   text-align: center;
   padding: 14px;
+}
+.watch-thumb-fallback {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-faint);
 }
