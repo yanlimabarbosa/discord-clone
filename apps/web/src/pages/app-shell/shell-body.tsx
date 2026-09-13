@@ -10,7 +10,6 @@ import { usePersistentState } from '../../hooks/use-persistent-state';
 import { ServerRail } from './server-rail';
 import { ChannelSidebar } from './channel-sidebar';
 import { ChannelView } from './channel-view';
-import { MemberList } from './member-list';
 import { Home } from './home';
 import type { useAppShell } from './use-app-shell';
 
@@ -143,12 +142,6 @@ function ServerBody({ shell, inVoice, onInvite }: ServerBodyProps) {
   const viewed = shell.activeChannel;
   const viewingConnectedVoice =
     inVoice && !!shell.voice && shell.voice.id === viewed?.id;
-  const isVoiceView = viewed?.type === 'VOICE' && viewingConnectedVoice;
-  const isTextView = viewed?.type === 'TEXT';
-
-  const membersVisible = isVoiceView
-    ? voicePanel === 'members'
-    : isTextView && textPanel === 'members';
 
   const toggleTextMembers = () =>
     setTextPanel(textPanel === 'members' ? 'none' : 'members');
@@ -183,10 +176,12 @@ function ServerBody({ shell, inVoice, onInvite }: ServerBodyProps) {
           <Suspense fallback={<VoiceConnecting name={viewed.name} />}>
             <VoiceStage
               voice={shell.voice}
+              serverId={shell.activeServerId}
               chatOpen={voicePanel === 'chat'}
               membersOpen={voicePanel === 'members'}
               onToggleChat={toggleVoiceChat}
               onToggleMembers={toggleVoiceMembers}
+              onMessageUser={shell.openDmWith}
             />
           </Suspense>
         ) : (
@@ -197,6 +192,7 @@ function ServerBody({ shell, inVoice, onInvite }: ServerBodyProps) {
           channel={viewed}
           membersOpen={textPanel === 'members'}
           onToggleMembers={toggleTextMembers}
+          onMessageUser={shell.openDmWith}
         />
       ) : shell.serversLoading || shell.channelsLoading ? (
         <main className="content">
@@ -212,12 +208,6 @@ function ServerBody({ shell, inVoice, onInvite }: ServerBodyProps) {
         </main>
       )}
 
-      {membersVisible && (
-        <MemberList
-          serverId={shell.activeServerId}
-          onMessageUser={shell.openDmWith}
-        />
-      )}
     </>
   );
 }

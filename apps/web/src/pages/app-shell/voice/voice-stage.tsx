@@ -2,23 +2,28 @@ import { useState } from 'react';
 import { Volume2, Users, MessageSquare, Tv } from 'lucide-react';
 import { VoiceRoom } from './voice-room';
 import { ChannelChat } from '../channel-view/channel-chat';
+import { MemberList } from '../member-list';
 import { Tooltip } from '../../../components/tooltip';
 import type { ActiveVoice } from '../use-app-shell';
 
 type VoiceStageProps = {
   voice: ActiveVoice;
+  serverId: string | null;
   chatOpen: boolean;
   membersOpen: boolean;
   onToggleChat: () => void;
   onToggleMembers: () => void;
+  onMessageUser: (userId: string) => void;
 };
 
 export function VoiceStage({
   voice,
+  serverId,
   chatOpen,
   membersOpen,
   onToggleChat,
   onToggleMembers,
+  onMessageUser,
 }: VoiceStageProps) {
   const [watchOpen, setWatchOpen] = useState(false);
   return (
@@ -66,6 +71,9 @@ export function VoiceStage({
           <div className="voice-chat-side">
             <ChannelChat channelId={voice.id} channelName={voice.name} />
           </div>
+        )}
+        {membersOpen && (
+          <MemberList serverId={serverId} onMessageUser={onMessageUser} />
         )}
       </div>
     </main>
