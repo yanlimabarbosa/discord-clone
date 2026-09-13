@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, useSyncExternalStore } from 'react';
 import { Settings } from 'lucide-react';
 import { useRoomContext } from '@livekit/components-react';
+import { LocalAudioTrack, Track } from 'livekit-client';
 import { Tooltip } from '../../../components/tooltip';
 import { screenQualityStore } from '../../../lib/screen-quality-store';
 import {
@@ -8,6 +9,27 @@ import {
   FPS_OPTIONS,
   type ScreenResolution,
 } from '../../../lib/screen-quality';
+import { voiceAudioStore } from '../../../lib/voice-audio-store';
+
+type DspKey = 'echoCancellation' | 'noiseSuppression' | 'autoGainControl';
+
+const DSP_TOGGLES: { key: DspKey; label: string; tip: string }[] = [
+  {
+    key: 'echoCancellation',
+    label: 'Echo',
+    tip: 'Cancels echo from your speakers',
+  },
+  {
+    key: 'noiseSuppression',
+    label: 'Noise',
+    tip: 'Suppresses steady background noise',
+  },
+  {
+    key: 'autoGainControl',
+    label: 'Gain',
+    tip: 'Keeps your mic volume level steady',
+  },
+];
 
 export function DevicePicker() {
   const room = useRoomContext();
@@ -54,6 +76,31 @@ export function DevicePicker() {
     }
   }
 
+  const audio = useSyncExternalStore(
+    voiceAudioStore.subscribe,
+    voiceAudioStore.getSnapshot,
+  );
+
+  // Browser DSP constraints can be applied on the live MediaStreamTrack —
+  // no re-acquire, so the active device and any track processor survive.
+  async function toggleDsp(key: DspKey) {
+    const next = { ...audio, [key]: !audio[key] };
+    voiceAudioStore.set(next);
+    const track = room.localParticipant.getTrackPublication(
+      Track.Source.Microphone,
+    )?.track;
+    if (!(track instanceof LocalAudioTrack)) return;
+    try {
+      await track.applyConstraints({
+        echoCancellation: next.echoCancellation,
+        noiseSuppression: next.noiseSuppression,
+        autoGainControl: next.autoGainControl,
+      });
+    } catch (err) {
+      console.error('[voice] applying mic processing failed', err);
+    }
+  }
+
   const mics = devices.filter((d) => d.kind === 'audioinput');
   const cams = devices.filter((d) => d.kind === 'videoinput');
 
@@ -82,6 +129,35 @@ export function DevicePicker() {
               {d.deviceId === activeMic && <span>✓</span>}
             </button>
           ))}
+
+          <div className="vc-device-group">Voice processing</div>
+          <div className="vc-quality-row">
+            {DSP_TOGGLES.map((t) => (
+              <Tooltip key={t.key} label={t.tip}>
+                <button
+                  className={`vc-quality-chip ${audio[t.key] ? 'vc-quality-on' : ''}`}
+                  aria-pressed={audio[t.key]}
+                  onClick={() => toggleDsp(t.key)}
+                >
+                  {t.label}
+                </button>
+              </Tooltip>
+            ))}
+          </div>
+          <div className="vc-quality-row">
+            <Tooltip label="Removes background noise (keyboard, fans, other voices) with an AI filter that runs on your device">
+              <button
+                className={`vc-quality-chip ${audio.rnnoise ? 'vc-quality-on' : ''}`}
+                aria-pressed={audio.rnnoise}
+                onClick={() =>
+                  voiceAudioStore.set({ ...audio, rnnoise: !audio.rnnoise })
+                }
+              >
+                AI noise filter
+              </button>
+            </Tooltip>
+          </div>
+
           <div className="vc-device-group">Camera</div>
           {cams.length === 0 && <div className="vc-device-empty">No devices</div>}
           {cams.map((d) => (

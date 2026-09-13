@@ -88,6 +88,12 @@
   gap: 6px;
   padding: 4px 8px 6px;
 }
+.vc-quality-row > .ui-tooltip-anchor {
+  flex: 1;
+}
+.vc-quality-row > .ui-tooltip-anchor > .vc-quality-chip {
+  width: 100%;
+}
 .vc-quality-chip {
   flex: 1;
   padding: 6px 4px;
