@@ -12,4 +12,20 @@ export default defineConfig({
     },
   },
   preview: { host: true, port: 4173, allowedHosts: true },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          livekit: [
+            'livekit-client',
+            '@livekit/components-react',
+            '@livekit/components-styles',
+          ],
+          'vendor-react': ['react', 'react-dom', 'react-router-dom'],
+          query: ['@tanstack/react-query'],
+          markdown: ['react-markdown', 'remark-gfm', 'remark-breaks'],
+        },
+      },
+    },
+  },
 });

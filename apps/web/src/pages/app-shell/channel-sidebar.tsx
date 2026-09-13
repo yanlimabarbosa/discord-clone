@@ -1,4 +1,11 @@
-import { useCallback, useMemo, useState, type DragEvent } from 'react';
+import {
+  Suspense,
+  lazy,
+  useCallback,
+  useMemo,
+  useState,
+  type DragEvent,
+} from 'react';
 import type { Channel, Server } from '../../types/server';
 import type { PublicUser } from '../../types/user';
 import type { Member } from '../../types/member';
@@ -17,20 +24,38 @@ import {
   reorderChannels,
   type DropTarget,
 } from '../../lib/channels/reorder-channels';
-import { CreateChannelDialog } from './create-channel-dialog';
-import { EditChannelDialog } from './edit-channel-dialog';
 import { CategoryHeader } from './category-header';
 import { ProfileCard } from './profile-card';
 import { ServerMenu } from './server-menu';
-import { ServerSettingsDialog } from './server-settings-dialog';
 import { useLeaveServer } from '../../hooks/servers/use-leave-server';
-import { VoiceConnectedPanel } from './voice/voice-connected-panel';
 import { ChannelRow } from './sidebar/channel-row';
 import { UserPanel } from './sidebar/user-panel';
 import { OccupantMenuHost } from './sidebar/occupant-menu-host';
 import { SkeletonRows } from './skeleton-rows';
 import { Tooltip } from '../../components/tooltip';
 import { Plus, FolderPlus, ChevronDown } from 'lucide-react';
+
+// Dialogs are conditionally mounted, so their chunks only load when opened;
+// the connected-voice panel pulls the LiveKit SDK and stays lazy so LiveKit
+// never loads outside a call.
+const CreateChannelDialog = lazy(() =>
+  import('./create-channel-dialog').then((m) => ({
+    default: m.CreateChannelDialog,
+  })),
+);
+const EditChannelDialog = lazy(() =>
+  import('./edit-channel-dialog').then((m) => ({ default: m.EditChannelDialog })),
+);
+const ServerSettingsDialog = lazy(() =>
+  import('./server-settings-dialog').then((m) => ({
+    default: m.ServerSettingsDialog,
+  })),
+);
+const VoiceConnectedPanel = lazy(() =>
+  import('./voice/voice-connected-panel').then((m) => ({
+    default: m.VoiceConnectedPanel,
+  })),
+);
 
 const NO_OCCUPANTS: Member[] = [];
 
@@ -391,28 +416,32 @@ export function ChannelSidebar({
       </div>
 
       {showVoicePanel && voice && (
-        <VoiceConnectedPanel
-          voice={voice}
-          onView={onViewVoice}
-          onLeave={onLeaveVoice}
-        />
+        <Suspense fallback={null}>
+          <VoiceConnectedPanel
+            voice={voice}
+            onView={onViewVoice}
+            onLeave={onLeaveVoice}
+          />
+        </Suspense>
       )}
 
       <UserPanel user={user} inVoice={inVoice} onLogout={onLogout} />
 
-      {creatingChannel && server && (
-        <CreateChannelDialog
-          serverId={server.id}
-          onClose={() => setCreatingChannel(false)}
-        />
-      )}
-      {editing && server && (
-        <EditChannelDialog
-          channel={editing}
-          serverId={server.id}
-          onClose={() => setEditing(null)}
-        />
-      )}
+      <Suspense fallback={null}>
+        {creatingChannel && server && (
+          <CreateChannelDialog
+            serverId={server.id}
+            onClose={() => setCreatingChannel(false)}
+          />
+        )}
+        {editing && server && (
+          <EditChannelDialog
+            channel={editing}
+            serverId={server.id}
+            onClose={() => setEditing(null)}
+          />
+        )}
+      </Suspense>
       {profile && (
         <ProfileCard
           user={profile}
@@ -441,15 +470,17 @@ export function ChannelSidebar({
         />
       )}
       {settingsOpen && server && (
-        <ServerSettingsDialog
-          server={server}
-          currentUserId={user?.id ?? ''}
-          onClose={() => setSettingsOpen(false)}
-          onDeleted={() => {
-            setSettingsOpen(false);
-            onLeaveServer();
-          }}
-        />
+        <Suspense fallback={null}>
+          <ServerSettingsDialog
+            server={server}
+            currentUserId={user?.id ?? ''}
+            onClose={() => setSettingsOpen(false)}
+            onDeleted={() => {
+              setSettingsOpen(false);
+              onLeaveServer();
+            }}
+          />
+        </Suspense>
       )}
     </aside>
   );

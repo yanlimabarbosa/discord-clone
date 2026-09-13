@@ -3,12 +3,13 @@ import { useQueryClient } from '@tanstack/react-query';
 import { getSocket } from '../../lib/socket';
 import { apiFetch } from '../../lib/api-client';
 import { playMentionSound } from '../../lib/sounds';
+import { notify, requestNotificationPermission } from '../../lib/notifications';
 import {
   applyActivity,
   isMention,
   type ActivityEvent,
 } from '../../lib/unread/apply-activity';
-import type { Server } from '../../types/server';
+import type { Channel, Server } from '../../types/server';
 import type { ServerUnread, UnreadMap } from '../../types/unread';
 
 export function useUnreadRealtime(
@@ -52,6 +53,10 @@ export function useUnreadRealtime(
         isMention(e, meId)
       ) {
         playMentionSound();
+        requestNotificationPermission();
+        const channels = qc.getQueryData<Channel[]>(['channels', e.serverId]);
+        const channel = channels?.find((c) => c.id === e.channelId);
+        notify(channel ? `Mentioned in #${channel.name}` : 'You were mentioned');
       }
     };
     socket.on('channel.activity', onActivity);

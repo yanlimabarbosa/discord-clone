@@ -1,6 +1,8 @@
 import { useEffect, useRef } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { getSocket } from '../../lib/socket';
+import { useDmActivity } from '../dms/use-dm-activity';
+import { useFriendsRealtime } from '../friends/use-friends-realtime';
 import type { Member } from '../../types/member';
 
 type PresenceEvent = {
@@ -15,6 +17,12 @@ type PresenceEvent = {
 const UNKNOWN_MEMBER_REFETCH_DELAY = 500;
 
 export function usePresenceRealtime() {
+  // shell-body mounts this hook unconditionally, which makes it the app-wide
+  // realtime anchor — the other per-user socket subscriptions ride along so
+  // friend/DM updates keep flowing while any server or Home view is open.
+  useFriendsRealtime();
+  useDmActivity();
+
   const qc = useQueryClient();
   const refetchTimer = useRef<number | null>(null);
 

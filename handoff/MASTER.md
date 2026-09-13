@@ -70,7 +70,7 @@ leaf, Escape coverage, attachment CLS/onError, toolbar/emoji-picker animation, D
 NEW unread divider (attempt), tooltips in chat files, role colors on authors (attempt).
 Owned: channel-view/**, home/dm-view.tsx, types/message.ts, new lib/components. Only agent allowed npm install.
 
-### ❌ Wave 3 — NOT STARTED. Ready-to-launch agent prompts:
+### ✅ Wave 3 — DONE (G1 code-split+routing: entry 1269kB→12kB, livekit deferred, URL routing; G2 user settings + PATCH /users/me; G3 friend.update + dm.activity events + OS notifications). Prompts below kept for reference:
 
 **G1 — code splitting + URL routing** (own: main.tsx, app.tsx, app-shell/index.tsx, use-app-shell.ts,
 shell-body.tsx routing wiring, vite.config.ts):

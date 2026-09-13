@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { Suspense, lazy, useState } from 'react';
 import { usePresenceRealtime } from '../../hooks/realtime/use-presence-realtime';
 import { useSpeakingRealtime } from '../../hooks/realtime/use-speaking-realtime';
 import { useUnreadRealtime } from '../../hooks/unread/use-unread-realtime';
@@ -10,13 +10,26 @@ import { usePersistentState } from '../../hooks/use-persistent-state';
 import { ServerRail } from './server-rail';
 import { ChannelSidebar } from './channel-sidebar';
 import { ChannelView } from './channel-view';
-import { VoiceStage } from './voice/voice-stage';
 import { MemberList } from './member-list';
-import { CreateServerDialog } from './create-server-dialog';
-import { InviteDialog } from './invite-dialog';
-import { ExploreDialog } from './explore-dialog';
 import { Home } from './home';
 import type { useAppShell } from './use-app-shell';
+
+// The voice stage pulls the LiveKit SDK — keep it out of the entry chunk;
+// dialogs are conditionally mounted, so their chunks only load when opened.
+const VoiceStage = lazy(() =>
+  import('./voice/voice-stage').then((m) => ({ default: m.VoiceStage })),
+);
+const CreateServerDialog = lazy(() =>
+  import('./create-server-dialog').then((m) => ({
+    default: m.CreateServerDialog,
+  })),
+);
+const InviteDialog = lazy(() =>
+  import('./invite-dialog').then((m) => ({ default: m.InviteDialog })),
+);
+const ExploreDialog = lazy(() =>
+  import('./explore-dialog').then((m) => ({ default: m.ExploreDialog })),
+);
 
 type ShellBodyProps = {
   shell: ReturnType<typeof useAppShell>;
@@ -73,23 +86,36 @@ export function ShellBody({ shell, inVoice }: ShellBodyProps) {
         />
       )}
 
-      {creatingServer && (
-        <CreateServerDialog onClose={() => setCreatingServer(false)} />
-      )}
-      {inviting && shell.activeServer && (
-        <InviteDialog
-          server={shell.activeServer}
-          isOwner={shell.activeServer.ownerId === shell.user?.id}
-          onClose={() => setInviting(false)}
-        />
-      )}
-      {exploring && (
-        <ExploreDialog
-          onClose={() => setExploring(false)}
-          onJoined={shell.selectServer}
-        />
-      )}
+      <Suspense fallback={null}>
+        {creatingServer && (
+          <CreateServerDialog onClose={() => setCreatingServer(false)} />
+        )}
+        {inviting && shell.activeServer && (
+          <InviteDialog
+            server={shell.activeServer}
+            isOwner={shell.activeServer.ownerId === shell.user?.id}
+            onClose={() => setInviting(false)}
+          />
+        )}
+        {exploring && (
+          <ExploreDialog
+            onClose={() => setExploring(false)}
+            onJoined={shell.selectServer}
+          />
+        )}
+      </Suspense>
     </div>
+  );
+}
+
+function VoiceConnecting({ name }: { name: string }) {
+  return (
+    <main className="content">
+      <div className="content-empty">
+        <div className="content-empty-logo">🔊</div>
+        <h2>Connecting to {name}…</h2>
+      </div>
+    </main>
   );
 }
 
@@ -154,20 +180,17 @@ function ServerBody({ shell, inVoice, onInvite }: ServerBodyProps) {
 
       {viewed?.type === 'VOICE' ? (
         viewingConnectedVoice && shell.voice ? (
-          <VoiceStage
-            voice={shell.voice}
-            chatOpen={voicePanel === 'chat'}
-            membersOpen={voicePanel === 'members'}
-            onToggleChat={toggleVoiceChat}
-            onToggleMembers={toggleVoiceMembers}
-          />
+          <Suspense fallback={<VoiceConnecting name={viewed.name} />}>
+            <VoiceStage
+              voice={shell.voice}
+              chatOpen={voicePanel === 'chat'}
+              membersOpen={voicePanel === 'members'}
+              onToggleChat={toggleVoiceChat}
+              onToggleMembers={toggleVoiceMembers}
+            />
+          </Suspense>
         ) : (
-          <main className="content">
-            <div className="content-empty">
-              <div className="content-empty-logo">🔊</div>
-              <h2>Connecting to {viewed.name}…</h2>
-            </div>
-          </main>
+          <VoiceConnecting name={viewed.name} />
         )
       ) : viewed?.type === 'TEXT' ? (
         <ChannelView

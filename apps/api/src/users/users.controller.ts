@@ -1,6 +1,8 @@
 import {
   BadRequestException,
+  Body,
   Controller,
+  Patch,
   Post,
   UploadedFile,
   UseGuards,
@@ -10,7 +12,7 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { User } from '@prisma/client';
 import { CurrentUser } from '../auth/current-user.decorator';
 import { JwtCookieGuard } from '../auth/jwt-cookie.guard';
-import { UsersService } from './users.service';
+import { UpdateMeInput, UsersService } from './users.service';
 
 const MAX_AVATAR_BYTES = 3 * 1024 * 1024;
 
@@ -18,6 +20,16 @@ const MAX_AVATAR_BYTES = 3 * 1024 * 1024;
 @UseGuards(JwtCookieGuard)
 export class UsersController {
   constructor(private readonly users: UsersService) {}
+
+  @Patch('me')
+  updateMe(@CurrentUser() user: User, @Body() body: UpdateMeInput) {
+    const hasField =
+      body.displayName !== undefined ||
+      body.username !== undefined ||
+      body.newPassword !== undefined;
+    if (!hasField) throw new BadRequestException('nothing to update');
+    return this.users.updateMe(user, body);
+  }
 
   @Post('me/avatar')
   @UseInterceptors(

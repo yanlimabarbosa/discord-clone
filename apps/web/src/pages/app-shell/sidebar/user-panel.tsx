@@ -1,9 +1,10 @@
-import { memo, useRef, type ChangeEvent } from 'react';
-import { LogOut } from 'lucide-react';
+import { memo, useRef, useState, type ChangeEvent } from 'react';
+import { LogOut, Settings } from 'lucide-react';
 import type { PublicUser } from '../../../types/user';
 import { useUploadAvatar } from '../../../hooks/users/use-upload-avatar';
 import { Avatar } from '../../../components/avatar';
 import { Tooltip } from '../../../components/tooltip';
+import { UserSettingsDialog } from '../user-settings-dialog';
 import { PrefVoiceToggles } from './pref-voice-toggles';
 import { LiveVoiceToggles } from './live-voice-toggles';
 import './sidebar.css';
@@ -21,6 +22,7 @@ export const UserPanel = memo(function UserPanel({
 }: UserPanelProps) {
   const uploadAvatar = useUploadAvatar();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [settingsOpen, setSettingsOpen] = useState(false);
 
   const onPickAvatar = (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -63,11 +65,23 @@ export const UserPanel = memo(function UserPanel({
       ) : (
         <PrefVoiceToggles />
       )}
+      <Tooltip label="User settings">
+        <button
+          className="icon-btn"
+          aria-label="User settings"
+          onClick={() => setSettingsOpen(true)}
+        >
+          <Settings size={16} />
+        </button>
+      </Tooltip>
       <Tooltip label="Log out">
         <button className="icon-btn" aria-label="Log out" onClick={onLogout}>
           <LogOut size={16} />
         </button>
       </Tooltip>
+      {settingsOpen && user && (
+        <UserSettingsDialog user={user} onClose={() => setSettingsOpen(false)} />
+      )}
     </div>
   );
 });

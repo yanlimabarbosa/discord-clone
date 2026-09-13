@@ -3,7 +3,9 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+import { User } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
+import { ChatGateway } from '../gateway/chat.gateway';
 
 const PUBLIC_USER = {
   id: true,
@@ -13,9 +15,22 @@ const PUBLIC_USER = {
   username: true,
 } as const;
 
+function publicUser(u: User) {
+  return {
+    id: u.id,
+    displayName: u.displayName,
+    avatarUrl: u.avatarUrl,
+    isGuest: u.isGuest,
+    username: u.username,
+  };
+}
+
 @Injectable()
 export class FriendsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly gateway: ChatGateway,
+  ) {}
 
   async sendRequest(userId: string, username: string) {
     const target = await this.prisma.user.findUnique({
@@ -34,9 +49,20 @@ export class FriendsService {
       },
     });
     if (existing) throw new BadRequestException('already requested or friends');
-    return this.prisma.friendship.create({
+    const fr = await this.prisma.friendship.create({
       data: { requesterId: userId, addresseeId: target.id },
     });
+    const requester = await this.prisma.user.findUniqueOrThrow({
+      where: { id: userId },
+      select: PUBLIC_USER,
+    });
+    this.gateway.emitFriendUpdate([userId, target.id], {
+      kind: 'request',
+      friendshipId: fr.id,
+      requester,
+      addressee: publicUser(target),
+    });
+    return fr;
   }
 
   async accept(userId: string, friendshipId: string) {
@@ -46,20 +72,41 @@ export class FriendsService {
     if (!fr || fr.addresseeId !== userId) {
       throw new NotFoundException('request not found');
     }
-    return this.prisma.friendship.update({
+    const updated = await this.prisma.friendship.update({
       where: { id: friendshipId },
       data: { status: 'ACCEPTED' },
+      include: {
+        requester: { select: PUBLIC_USER },
+        addressee: { select: PUBLIC_USER },
+      },
     });
+    this.gateway.emitFriendUpdate([updated.requesterId, updated.addresseeId], {
+      kind: 'accepted',
+      friendshipId: updated.id,
+      requester: updated.requester,
+      addressee: updated.addressee,
+    });
+    return updated;
   }
 
   async remove(userId: string, friendshipId: string) {
     const fr = await this.prisma.friendship.findUnique({
       where: { id: friendshipId },
+      include: {
+        requester: { select: PUBLIC_USER },
+        addressee: { select: PUBLIC_USER },
+      },
     });
     if (!fr || (fr.requesterId !== userId && fr.addresseeId !== userId)) {
       throw new NotFoundException('not found');
     }
     await this.prisma.friendship.delete({ where: { id: friendshipId } });
+    this.gateway.emitFriendUpdate([fr.requesterId, fr.addresseeId], {
+      kind: 'removed',
+      friendshipId: fr.id,
+      requester: fr.requester,
+      addressee: fr.addressee,
+    });
     return { ok: true };
   }
 

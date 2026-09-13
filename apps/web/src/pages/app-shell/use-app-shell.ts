@@ -1,4 +1,5 @@
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { matchPath, useLocation, useNavigate } from 'react-router-dom';
 import { useMe } from '../../hooks/auth/use-me';
 import { useLogout } from '../../hooks/auth/use-logout';
 import { useServers } from '../../hooks/servers/use-servers';
@@ -18,34 +19,79 @@ export type ActiveVoice = {
   serverName: string;
 };
 
+type ParsedAppPath = {
+  home: boolean;
+  serverId: string | null;
+  channelId: string | null;
+};
+
+// /channels/:serverId/:channelId and /channels/:serverId map to a server
+// view; anything else ('/', '/home', unknown paths) is home. Unknown paths
+// get normalized to /home by the canonicalization effect below.
+function parseAppPath(pathname: string): ParsedAppPath {
+  const withChannel = matchPath('/channels/:serverId/:channelId', pathname);
+  if (withChannel) {
+    return {
+      home: false,
+      serverId: withChannel.params.serverId ?? null,
+      channelId: withChannel.params.channelId ?? null,
+    };
+  }
+  const serverOnly = matchPath('/channels/:serverId', pathname);
+  if (serverOnly) {
+    return {
+      home: false,
+      serverId: serverOnly.params.serverId ?? null,
+      channelId: null,
+    };
+  }
+  return { home: true, serverId: null, channelId: null };
+}
+
 export function useAppShell() {
   const { data: user } = useMe();
   const logoutMutation = useLogout();
-  const { data: servers, isLoading: serversLoading } = useServers();
+  const {
+    data: servers,
+    isLoading: serversLoading,
+    isFetching: serversFetching,
+  } = useServers();
 
-  const [pickedServerId, setPickedServerId] = useState<string | null>(null);
-  const [pickedChannelId, setPickedChannelId] = useState<string | null>(null);
+  // The URL is the source of truth for where the user is looking (so refresh
+  // and back/forward restore context); the voice connection is plain state so
+  // a live call survives navigating anywhere in the app.
+  const location = useLocation();
+  const navigate = useNavigate();
+  const parsed = useMemo(() => parseAppPath(location.pathname), [location.pathname]);
+
   const [voice, setVoice] = useState<ActiveVoice | null>(null);
-  const [homeActive, setHomeActive] = useState(true);
   const [pendingDmUserId, setPendingDmUserId] = useState<string | null>(null);
   const [lastChannelByServer, setLastChannelByServer] = usePersistentState<
     Record<string, string>
   >('nyx.lastChannelByServer', {});
 
-  const activeServerId = pickedServerId ?? servers?.[0]?.id ?? null;
+  const homeActive = parsed.home;
+  const activeServerId = parsed.serverId ?? servers?.[0]?.id ?? null;
   const { data: channels, isLoading: channelsLoading } =
     useChannels(activeServerId);
 
-  // Resolution order: explicit pick → remembered channel for this server →
-  // first text channel. Remembered/picked ids are validated against the
-  // loaded channel list so deleted channels can't be restored.
+  // Resolution order: channel in the URL → remembered channel for this server
+  // → first text channel. URL/remembered ids are validated against the loaded
+  // channel list so deleted channels can't be restored, and a voice channel in
+  // the URL only counts while actually connected to it (a refresh drops the
+  // call, so the URL falls back to a text channel instead of a dead voice view).
   const exists = (id: string | undefined | null) =>
     !!id && !!channels?.some((c) => c.id === id);
+  const urlChannel = parsed.channelId
+    ? channels?.find((c) => c.id === parsed.channelId) ?? null
+    : null;
+  const urlChannelValid =
+    !!urlChannel && (urlChannel.type !== 'VOICE' || voice?.id === urlChannel.id);
   const rememberedChannelId = activeServerId
     ? lastChannelByServer[activeServerId]
     : undefined;
-  const activeChannelId = exists(pickedChannelId)
-    ? pickedChannelId
+  const activeChannelId = urlChannelValid
+    ? parsed.channelId
     : exists(rememberedChannelId)
       ? rememberedChannelId!
       : firstTextChannel(channels)?.id ?? null;
@@ -55,22 +101,72 @@ export function useAppShell() {
 
   const { data: voiceTokenData } = useVoiceToken(voice?.id ?? null);
 
+  // Canonicalize the URL against loaded data: '/' and unknown paths become
+  // /home, a server the user isn't in bounces home (only once the servers
+  // list has settled, so a just-joined server mid-refetch isn't bounced),
+  // and /channels/:serverId gets the resolved channel filled in via replace
+  // so history stays one entry per user action.
+  useEffect(() => {
+    if (parsed.home) {
+      if (location.pathname !== '/home') navigate('/home', { replace: true });
+      return;
+    }
+    if (!parsed.serverId) return;
+    if (
+      servers &&
+      !serversLoading &&
+      !serversFetching &&
+      !servers.some((s) => s.id === parsed.serverId)
+    ) {
+      navigate('/home', { replace: true });
+      return;
+    }
+    if (channelsLoading || !channels) return;
+    if (activeChannelId) {
+      if (parsed.channelId !== activeChannelId) {
+        navigate(`/channels/${parsed.serverId}/${activeChannelId}`, {
+          replace: true,
+        });
+      }
+    } else if (parsed.channelId) {
+      navigate(`/channels/${parsed.serverId}`, { replace: true });
+    }
+  }, [
+    parsed,
+    location.pathname,
+    servers,
+    serversLoading,
+    serversFetching,
+    channels,
+    channelsLoading,
+    activeChannelId,
+    navigate,
+  ]);
+
   const logout = useCallback(() => logoutMutation.mutate(), [logoutMutation.mutate]);
 
-  const goHome = useCallback(() => setHomeActive(true), []);
+  // Ref mirror so navigation handlers keep stable identities — they are
+  // passed down to memoized rows.
+  const navigateRef = useRef(navigate);
+  navigateRef.current = navigate;
 
-  const openDmWith = useCallback((userId: string) => {
-    setHomeActive(true);
-    setPendingDmUserId(userId);
+  const go = useCallback((path: string) => {
+    if (window.location.pathname !== path) navigateRef.current(path);
   }, []);
+
+  const goHome = useCallback(() => go('/home'), [go]);
+
+  const openDmWith = useCallback(
+    (userId: string) => {
+      setPendingDmUserId(userId);
+      go('/home');
+    },
+    [go],
+  );
 
   const consumePendingDm = useCallback(() => setPendingDmUserId(null), []);
 
-  const selectServer = useCallback((id: string) => {
-    setHomeActive(false);
-    setPickedServerId(id);
-    setPickedChannelId(null);
-  }, []);
+  const selectServer = useCallback((id: string) => go(`/channels/${id}`), [go]);
 
   // Ref mirror so selectChannel keeps a stable identity across selections —
   // it is passed down to memoized channel rows.
@@ -79,8 +175,6 @@ export function useAppShell() {
 
   const selectChannel = useCallback(
     (channel: Channel) => {
-      setHomeActive(false);
-      setPickedChannelId(channel.id);
       if (channel.type === 'TEXT') {
         setLastChannelByServer({
           ...lastChannelRef.current,
@@ -95,23 +189,23 @@ export function useAppShell() {
           serverName: activeServer?.name ?? '',
         });
       }
+      go(`/channels/${channel.serverId}/${channel.id}`);
     },
-    [setLastChannelByServer, activeServer?.name],
+    [setLastChannelByServer, activeServer?.name, go],
   );
 
   const viewVoice = useCallback(() => {
     if (!voice) return;
-    setHomeActive(false);
-    setPickedServerId(voice.serverId);
-    setPickedChannelId(voice.id);
-  }, [voice]);
+    go(`/channels/${voice.serverId}/${voice.id}`);
+  }, [voice, go]);
 
-  const moveToVoice = useCallback((next: ActiveVoice) => {
-    setHomeActive(false);
-    setVoice(next);
-    setPickedServerId(next.serverId);
-    setPickedChannelId(next.id);
-  }, []);
+  const moveToVoice = useCallback(
+    (next: ActiveVoice) => {
+      setVoice(next);
+      go(`/channels/${next.serverId}/${next.id}`);
+    },
+    [go],
+  );
 
   const leaveVoice = useCallback(() => setVoice(null), []);
 

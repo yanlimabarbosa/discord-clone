@@ -42,6 +42,9 @@ export class ChatGateway
       return;
     }
     client.data.user = { id: user.id, displayName: user.displayName };
+    // Per-user room: lets services target all of a user's sockets directly
+    // (friend updates, DM activity) without a userId→socket map.
+    client.join(`user:${user.id}`);
     const next = (this.onlineCounts.get(user.id) ?? 0) + 1;
     this.onlineCounts.set(user.id, next);
     if (next === 1) this.broadcastPresence(user.id);
@@ -220,6 +223,29 @@ export class ChatGateway
 
   broadcastDm(conversationId: string, message: unknown) {
     this.server.to(`dm:${conversationId}`).emit('dm.new', message);
+  }
+
+  emitFriendUpdate(
+    userIds: string[],
+    payload: {
+      kind: 'request' | 'accepted' | 'removed';
+      friendshipId: string;
+      requester: unknown;
+      addressee: unknown;
+    },
+  ) {
+    for (const userId of userIds) {
+      this.server.to(`user:${userId}`).emit('friend.update', payload);
+    }
+  }
+
+  emitDmActivity(
+    userIds: string[],
+    payload: { conversationId: string; lastMessage: string; from: unknown },
+  ) {
+    for (const userId of userIds) {
+      this.server.to(`user:${userId}`).emit('dm.activity', payload);
+    }
   }
 
   emitVoiceMoved(payload: {

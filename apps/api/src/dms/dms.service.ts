@@ -131,6 +131,20 @@ export class DmsService implements OnModuleInit {
       select: DM_MESSAGE_SELECT,
     });
     this.gateway.broadcastDm(conversationId, message);
+    const participants = await this.prisma.conversationParticipant.findMany({
+      where: { conversationId },
+      select: { userId: true },
+    });
+    // Per-user activity feed for recipients only — the author's tabs must not
+    // notify themselves, and the dm room already covers the open conversation.
+    const recipientIds = participants
+      .map((p) => p.userId)
+      .filter((id) => id !== userId);
+    this.gateway.emitDmActivity(recipientIds, {
+      conversationId,
+      lastMessage: message.content,
+      from: message.author,
+    });
     return message;
   }
 
